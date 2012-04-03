@@ -1,2 +1,0 @@
-A simple maze game written in JavaScript.
-Will use node.js for the server side.
