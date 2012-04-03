@@ -14,15 +14,43 @@ var Maze = makeClass();
 
 Maze.prototype.init = function(map) {
     this.type = "Maze";
-    this.width = map.length-1;
-    this.height = map[0].length-1;
-    for (var i=1; i<this.width; i++) {
-        if (map[i].length != this.height+1) {
+    this.height = map.length-1;
+    this.width = map[0].length-1;
+    for (var i=1; i<this.height; i++) {
+        if (map[i].length != this.width+1) {
             throw "Inconsistent height";
         }
     }
     this.map = map;
 };
+
+function makeMaze(width, height) {
+    if (!height) height = width;
+    map = new Array();
+    for (var i=0; i<=height; i++) {
+        var row = new Array();
+        for (var j=0; j<=width; j++) row[j] = 1;
+        map[i] = row;
+    }
+    return new Maze(map);
+}
+
+function copyMap(map) {
+    var res = new Array();
+    for (var i=0; i<map.length; i++) {
+        row = map[i];
+        var resrow = new Array();
+        for (var j=0; j<row.length; j++) {
+            resrow[j] = row[j];
+        }
+        res[i] = row;
+    }
+    return res;
+}
+
+Maze.prototype.clone = function() {
+    return new Maze(copyMap(this.map));
+}
 
 Maze.prototype.topdraw = function(canvas) {
     var ctx = canvas.getContext('2d');
@@ -112,7 +140,7 @@ Maze.prototype.edit = function(canvas) {
         var i = Math.round(y * maze.height / canvas.height);
         var j = Math.round(x * maze.width / canvas.width);
 
-        maze.map[i][j] = !maze.map[i][j];
+        maze.map[i][j] = maze.map[i][j] ? 0 : 1;
         maze.topdraw(canvas);
     }, false);
     this.topdraw(canvas);
