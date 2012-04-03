@@ -12,33 +12,82 @@ function makeClass(){
 
 var Maze = makeClass();
 
+// An array <map> is an array of strings.
+// The even strings describe the horizontal walls.
+// The odd strings describe the vertical walls.
+// Anything other than a space represents a wall.
+// The odd strings are one character longer than the even strings.
+// There array is of an odd length, putting horizontal walls
+// first and last.
+
 Maze.prototype.init = function(map) {
     this.type = "Maze";
-    this.height = map.length-1;
-    this.width = map[0].length-1;
-    for (var i=1; i<this.height; i++) {
-        if (map[i].length != this.width+1) {
-            throw "Inconsistent height";
-        }
+    if (!map) return;           // caller is filling things in by hand
+    if (map.length % 2 != 1) {
+        throw('map must be an odd-length array of strings');
     }
-    this.map = map;
+    var horiz = new Array();
+    var vert = new Array();
+    var w = map[0].length;
+    var h = (map.length-1)/2;
+    var idx = 0;
+    for (var i=0; i<map.length; i+=2) {
+        var hs = map[i];
+        var vs = map[i+1]
+        var isv = ((i+1) != map.length);
+        if (typeof(hs)!='string' || (isv && typeof(vs)!='string')) {
+            throw 'map must be an array of strings';
+        }
+        if (hs.length!=w || (isv && vs.length!=(w+1))) {
+            throw 'map has inconsistent element length';
+        }
+        var ha = new Array();
+        var va = new Array();
+        for (var j=0; j<w; j++) {
+            ha[j] = (hs[j]==' ') ? 0 : 1;
+            if (isv) va[j] = (vs[j]==' ') ? 0 : 1;
+        }
+        if (isv) {
+            va[w] = (vs[w]==' ') ? 0 : 1;
+            vert[idx] = va;
+        }
+        horiz[idx] = ha;
+        idx++;
+    }
+    this.width = w;
+    this.height = h;
+    this.horiz = horiz;
+    this.vert = vert;
 };
 
 function makeMaze(width, height) {
     if (!height) height = width;
-    map = new Array();
-    for (var i=0; i<=height; i++) {
-        var row = new Array();
-        for (var j=0; j<=width; j++) row[j] = 1;
-        map[i] = row;
+    var maze = new Maze();
+    maze.width = width;
+    maze.height = height;
+    var horiz = new Array();
+    var vert = new Array();
+    var idx = 0;
+    for (var i=0; i<height; i++) {
+        var ha = new Array();
+        var va = new Array();
+        for (var j=0; j<width; j++) {
+            ha[j] = 1;
+            va[j] = 1;
+        }
+        va[width] = 1;
+        horiz[idx] = ha;
+        vert[idx++] = va;
     }
-    return new Maze(map);
+    maze.horiz = horiz;
+    maze.vert = vert;
+    return maze;
 }
 
-function copyMap(map) {
+function copy2d(arr) {
     var res = new Array();
-    for (var i=0; i<map.length; i++) {
-        row = map[i];
+    for (var i=0; i<arr.length; i++) {
+        row = arr[i];
         var resrow = new Array();
         for (var j=0; j<row.length; j++) {
             resrow[j] = row[j];
@@ -49,7 +98,11 @@ function copyMap(map) {
 }
 
 Maze.prototype.clone = function() {
-    return new Maze(copyMap(this.map));
+    var maze = new Maze();
+    maze.width = this.width;
+    maze.height = this.height;
+    maze.horiz = copy2d(this.horiz);
+    maze.vert = copy2d(this.vert);
 }
 
 Maze.prototype.topdraw = function(canvas) {
@@ -59,7 +112,8 @@ Maze.prototype.topdraw = function(canvas) {
     var left = 1;
     var top = 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var map = this.map;
+    var vert = this.vert;
+    var horiz = this.horiz;
 
     ctx.beginPath();
 
@@ -67,39 +121,47 @@ Maze.prototype.topdraw = function(canvas) {
     for (var i=0; i<=this.height; i++) {
         var y = Math.round(i*height/this.height);
         var pendown = false
-        var row = map[i];
-        for (var j=0; j<=this.width; j++) {
-            var x = Math.round(j*width/this.width);
+        var row = horiz[i];
+        var lastx = 0;
+        for (var j=0; j<this.width; j++) {
+            var x = Math.round((j+1)*width/this.width);
             if (row[j]) {
-                if (pendown) {
-                    ctx.lineTo(left+x, top+y);
-                } else {
-                    ctx.moveTo(left+x, top+y);
+                if (!pendown) {
+                    ctx.moveTo(left+lastx, top+y);
                     pendown = true;
                 }
             } else {
-                pendown = false;
+                if (pendown) {
+                    ctx.lineTo(left+lastx, top+y);
+                    pendown = false;
+                }
             }
+            lastx = x;
         }
+        if (pendown) ctx.lineTo(left+x, top+y);
     }
 
     // Draw vertical lines
     for (j=0; j<=this.width; j++) {
         var x = Math.round(j*width/this.width);
         var pendown = false
-        for (var i=0; i<=this.height; i++) {
-            var y = Math.round(i*height/this.height);
-            if (map[i][j]) {
-                if (pendown) {
-                    ctx.lineTo(left+x, top+y);
-                } else {
-                    ctx.moveTo(left+x, top+y);
+        var lasty = 0;
+        for (var i=0; i<this.height; i++) {
+            var y = Math.round((i+1)*height/this.height);
+            if (vert[i][j]) {
+                if (!pendown) {
+                    ctx.moveTo(left+x, top+lasty);
                     pendown = true;
                 }
             } else {
-                pendown = false;
+                if (pendown) {
+                    ctx.lineTo(left+x, top+lasty);
+                    pendown = false;
+                }
             }
+            lasty = y;
         }
+        if (pendown) ctx.lineTo(left+x, top+y);
     }
 
     ctx.strokeStyle='black';
@@ -128,20 +190,50 @@ function eventPos(e) {
     return {x:posx, y:posy};
 }
 
+function rem0(x, y) {
+    return (y==0) ? x : x%y;
+}
+
 Maze.prototype.edit = function(canvas) {
-    var maze = this;
-    document.addEventListener("mousedown", function(e) {
-        var pos = eventPos(e);
-
-        var offset = $(canvas).offset();
-        var x = pos.x - offset.left
-        var y = pos.y - offset.top;
-
-        var i = Math.round(y * maze.height / canvas.height);
-        var j = Math.round(x * maze.width / canvas.width);
-
-        maze.map[i][j] = maze.map[i][j] ? 0 : 1;
-        maze.topdraw(canvas);
-    }, false);
+    var listener = function(e) {
+        maze.clickListener(e, canvas);
+    };
+    document.addEventListener('mousedown', listener, false);
+    document.addEventListener('touchStart', listener, false);
     this.topdraw(canvas);
+}
+
+Maze.prototype.clickListener = function(e, canvas) {
+    var maze = this;
+    var pos = eventPos(e);
+
+    var offset = $(canvas).offset();
+    var x = pos.x - offset.left
+    var y = pos.y - offset.top;
+
+    var i = (y * maze.height / canvas.height);
+    var j = (x * maze.width / canvas.width);
+    var diffi = Math.abs(rem0(i, Math.floor(i)) - 0.5);
+    var diffj = Math.abs(rem0(j, Math.floor(j)) - 0.5);
+    if (diffi < diffj) {
+        // It's a vertical line
+        vert = maze.vert;
+        i = Math.floor(y * (maze.height-0.5) / canvas.height);
+        j = Math.round(j);
+        //alert('vert, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
+        vert[i][j] = vert[i][j] ? 0 : 1;
+    } else {
+        // It's a horizontal line
+        horiz = maze.horiz;
+        i = Math.round(i);
+        j = Math.floor(x * (maze.width-0.5) / canvas.width)
+        //alert('horiz, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
+        horiz[i][j] = horiz[i][j] ? 0 : 1;
+    }
+
+    maze.topdraw(canvas);
+}
+
+Maze.prototype.toMap = function() {
+    
 }
