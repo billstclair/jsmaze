@@ -1,0 +1,67 @@
+<html>
+<head>
+  <script src='jquery.min.js'></script>
+  <script src='jsmaze.js'></script>
+</head>
+<body>
+  <center>
+    <canvas id='draw' width='500' height='500'></canvas><br/>
+    <canvas id='topview' width='500' height='500'></canvas>
+  </center>
+  <script>
+function drawit(color, c) {
+    // http://www.w3schools.com/html5/html5_ref_canvas.asp
+    if (!c) c = '#draw';
+    c = $(c)[0];
+    ctx = c.getContext('2d');
+    ctx.clearRect(1,1,c.width-1,c.height-1);
+    ctx.moveTo(1, 1);
+    ctx.lineTo(c.width-1,1);
+    ctx.lineTo(c.width-1,c.height-1);
+    ctx.lineTo(1,c.height-1);
+    ctx.lineTo(1,1);
+    ctx.lineTo(c.width-1,c.height-1);
+    ctx.moveTo(c.width-1,1);
+    ctx.lineTo(1,c.height-1);
+    ctx.strokeStyle=color;
+    ctx.stroke();
+}
+var colors = ['purple','blue','green','orange','red'];
+var idx = 0;
+function drawloop(time, c) {
+    drawit(colors[idx++], c);
+    if (idx >= colors.length) idx = 0;
+    if (time) window.setTimeout(function(){drawloop(time);}, time);
+}
+drawloop(null);
+//drawloop(null,'#topview')
+
+maze = new Maze([[1,1,1,1,1,1,1,1,1,1,1],
+                 [1,0,0,0,0,0,0,0,0,0,1],
+                 [1,0,1,1,1,1,1,0,1,1,1],
+                 [1,0,1,0,0,0,1,0,1,0,1],
+                 [1,0,1,0,1,0,1,0,1,0,1],
+                 [1,0,1,0,1,0,1,0,0,0,1],
+                 [1,0,1,0,1,0,1,0,1,0,1],
+                 [1,0,1,0,1,0,0,0,1,0,1],
+                 [1,0,1,0,1,1,1,1,1,0,1],
+                 [1,0,0,0,0,0,0,0,0,0,1],
+                 [1,1,1,1,1,1,1,1,1,1,1]]);
+
+maze = new Maze([[1,1,1,1,1,1,1,1,1,1,1],
+                 [1,0,0,0,0,0,0,0,0,0,1],
+                 [1,0,1,1,1,1,1,1,1,0,1],
+                 [1,0,1,0,1,0,0,0,1,0,1],
+                 [1,0,1,0,1,0,1,0,1,0,1],
+                 [1,0,1,0,1,0,1,0,1,0,1],
+                 [1,0,1,0,1,0,1,0,1,0,1],
+                 [1,0,1,0,0,0,1,0,1,0,1],
+                 [1,0,1,1,1,0,1,0,1,0,1],
+                 [1,0,0,0,0,0,1,0,0,0,1],
+                 [1,1,1,1,1,1,1,1,1,1,1]]);
+
+canvas = $('#topview')[0];
+maze.edit(canvas);
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+The Locker Project - http://lockerproject.org/
+node.js package manager - http://npmjs.org/
+peer-to-peer networking - http://telehash.org/
