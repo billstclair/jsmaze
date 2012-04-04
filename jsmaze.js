@@ -4,7 +4,7 @@ function makeClass(){
   return function(args){
     if ( this instanceof arguments.callee ) {
       if ( typeof this.init == "function" )
-        this.init.apply( this, args.callee ? args : arguments );
+        this.init.apply( this, (args && args.callee) ? args : arguments );
     } else
       return new arguments.callee( arguments );
   };
@@ -12,12 +12,12 @@ function makeClass(){
 
 var Maze = makeClass();
 
-// An array <map> is an array of strings.
+// A Maze <map> is an array of strings.
 // The even strings describe the horizontal walls.
 // The odd strings describe the vertical walls.
 // Anything other than a space represents a wall.
-// The odd strings are one character longer than the even strings.
-// There array is of an odd length, putting horizontal walls
+// The odd (vertical) strings are one character longer than the even strings.
+// The array is of an odd length, putting horizontal walls
 // first and last.
 
 Maze.prototype.init = function(map) {
@@ -31,23 +31,23 @@ Maze.prototype.init = function(map) {
     var w = map[0].length;
     var h = (map.length-1)/2;
     var idx = 0;
-    for (var i=0; i<map.length; i+=2) {
-        var hs = map[i];
-        var vs = map[i+1]
-        var isv = ((i+1) != map.length);
-        if (typeof(hs)!='string' || (isv && typeof(vs)!='string')) {
+    for (var j=0; j<map.length; j+=2) {
+        var hs = map[j];
+        var vs = map[j+1]
+        var dov = ((j+1) != map.length);
+        if (typeof(hs)!='string' || (dov && typeof(vs)!='string')) {
             throw 'map must be an array of strings';
         }
-        if (hs.length!=w || (isv && vs.length!=(w+1))) {
+        if (hs.length!=w || (dov && vs.length!=(w+1))) {
             throw 'map has inconsistent element length';
         }
         var ha = new Array();
         var va = new Array();
-        for (var j=0; j<w; j++) {
-            ha[j] = (hs[j]==' ') ? 0 : 1;
-            if (isv) va[j] = (vs[j]==' ') ? 0 : 1;
+        for (var i=0; i<w; i++) {
+            ha[i] = (hs[i]==' ') ? 0 : 1;
+            if (dov) va[i] = (vs[i]==' ') ? 0 : 1;
         }
-        if (isv) {
+        if (dov) {
             va[w] = (vs[w]==' ') ? 0 : 1;
             vert[idx] = va;
         }
@@ -60,24 +60,27 @@ Maze.prototype.init = function(map) {
     this.vert = vert;
 };
 
-function makeMaze(width, height) {
+function makeMaze(width, height, val) {
+    val = val ? 1 : 0;
     if (!height) height = width;
-    var maze = new Maze();
+    var maze = Maze();
     maze.width = width;
     maze.height = height;
     var horiz = new Array();
     var vert = new Array();
     var idx = 0;
-    for (var i=0; i<height; i++) {
+    for (var j=0; j<=height; j++) {
+        var dov = (j < height);
         var ha = new Array();
-        var va = new Array();
-        for (var j=0; j<width; j++) {
-            ha[j] = 1;
-            va[j] = 1;
+        var va = dov ? new Array() : null;
+        for (var i=0; i<width; i++) {
+            ha[i] = val;
+            if (dov) va[i] = val;
         }
-        va[width] = 1;
+        if (dov) va[width] = val;
         horiz[idx] = ha;
-        vert[idx++] = va;
+        if (dov) vert[idx] = va;
+        idx++;
     }
     maze.horiz = horiz;
     maze.vert = vert;
@@ -98,11 +101,12 @@ function copy2d(arr) {
 }
 
 Maze.prototype.clone = function() {
-    var maze = new Maze();
+    var maze = Maze();
     maze.width = this.width;
     maze.height = this.height;
     maze.horiz = copy2d(this.horiz);
     maze.vert = copy2d(this.vert);
+    return maze;
 }
 
 Maze.prototype.topdraw = function(canvas) {
@@ -118,14 +122,14 @@ Maze.prototype.topdraw = function(canvas) {
     ctx.beginPath();
 
     // Draw horizontal lines
-    for (var i=0; i<=this.height; i++) {
-        var y = Math.round(i*height/this.height);
+    for (var j=0; j<=this.height; j++) {
+        var y = Math.round(j*height/this.height);
         var pendown = false
-        var row = horiz[i];
+        var row = horiz[j];
         var lastx = 0;
-        for (var j=0; j<this.width; j++) {
-            var x = Math.round((j+1)*width/this.width);
-            if (row[j]) {
+        for (var i=0; i<this.width; i++) {
+            var x = Math.round((i+1)*width/this.width);
+            if (row[i]) {
                 if (!pendown) {
                     ctx.moveTo(left+lastx, top+y);
                     pendown = true;
@@ -142,13 +146,13 @@ Maze.prototype.topdraw = function(canvas) {
     }
 
     // Draw vertical lines
-    for (j=0; j<=this.width; j++) {
-        var x = Math.round(j*width/this.width);
+    for (i=0; i<=this.width; i++) {
+        var x = Math.round(i*width/this.width);
         var pendown = false
         var lasty = 0;
-        for (var i=0; i<this.height; i++) {
-            var y = Math.round((i+1)*height/this.height);
-            if (vert[i][j]) {
+        for (var j=0; j<this.height; j++) {
+            var y = Math.round((j+1)*height/this.height);
+            if (vert[j][i]) {
                 if (!pendown) {
                     ctx.moveTo(left+x, top+lasty);
                     pendown = true;
@@ -276,3 +280,5 @@ Maze.prototype.toMap = function() {
     }
     return map;
 }
+
+//Maze.prototype.view3d(canvas, 
