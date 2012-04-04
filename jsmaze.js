@@ -177,7 +177,15 @@ function eventPos(e) {
     var posy = 0;
     if (!e) var e = window.event;
     lastEvent = e;
-    if (e.pageX || e.pageY) 	{
+
+    var touches = e.targetTouches;
+    if (touches) {
+        // iphone startTouch event
+        if (touches.length != 1) return null;
+        //e.preventDefault();
+        posx = touches[0].pageX;
+        posy = touches[0].pageY;
+    } else if (e.pageX || e.pageY) 	{
 	posx = e.pageX;
 	posy = e.pageY;
     }
@@ -195,17 +203,30 @@ function rem0(x, y) {
 }
 
 Maze.prototype.edit = function(canvas) {
+    if (document.jsmazeEditListener) return;
+
+    var maze = this;
     var listener = function(e) {
         maze.clickListener(e, canvas);
     };
-    document.addEventListener('mousedown', listener, false);
-    document.addEventListener('touchStart', listener, false);
+    document.addEventListener('mousedown', listener, false); // PC
+    canvas.addEventListener('touchstart', listener, false);  // touch screen
+    document.jsmazeEditListener = listener;
     this.topdraw(canvas);
+}
+
+Maze.prototype.endEdit = function(canvas) {
+    var listener = document.jsmazeEditListener;
+    if (!listener) return;
+    document.removeEventListener('mousedown', listener, false);
+    canvas.removeEventListener('touchstart', listener, false);
+    document.jsmazeListener = null;
 }
 
 Maze.prototype.clickListener = function(e, canvas) {
     var maze = this;
     var pos = eventPos(e);
+    if (!pos) return;
 
     var offset = $(canvas).offset();
     var x = pos.x - offset.left
@@ -218,7 +239,7 @@ Maze.prototype.clickListener = function(e, canvas) {
     if (diffi < diffj) {
         // It's a vertical line
         vert = maze.vert;
-        i = Math.floor(y * (maze.height-0.5) / canvas.height);
+        i = Math.floor(i);
         j = Math.round(j);
         //alert('vert, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
         vert[i][j] = vert[i][j] ? 0 : 1;
@@ -226,7 +247,7 @@ Maze.prototype.clickListener = function(e, canvas) {
         // It's a horizontal line
         horiz = maze.horiz;
         i = Math.round(i);
-        j = Math.floor(x * (maze.width-0.5) / canvas.width)
+        j = Math.floor(j);
         //alert('horiz, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
         horiz[i][j] = horiz[i][j] ? 0 : 1;
     }
@@ -235,5 +256,23 @@ Maze.prototype.clickListener = function(e, canvas) {
 }
 
 Maze.prototype.toMap = function() {
-    
+    var map = new Array();
+    var horiz = this.horiz;
+    var vert = this.vert;
+    var idx = 0;
+    for (var i=0; i<=this.height; i++) {
+        var dov = (i<this.height);
+        var ha = horiz[i];
+        var va = dov ? vert[i] : null;
+        var hs = '';
+        var vs = '';
+        for (var j=0; j<=this.width; j++) {
+            var doh = (j<this.width);
+            if (doh) hs += ha[j] ? '-' : ' ';
+            if (dov) vs += va[j] ? '|' : ' ';
+        }
+        map[idx++] = hs;
+        if (dov) map[idx++] = vs;
+    }
+    return map;
 }

@@ -1,0 +1,2 @@
+#!/bin/bash
+echo $HUBD:/usr/local/www/billstclair.com/www/jsmaze
