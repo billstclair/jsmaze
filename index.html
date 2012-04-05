@@ -7,36 +7,77 @@
 <body>
   <center>
     <h2>jsMaze</h2>
-    <p><canvas id='draw' width='768' height='768'></canvas></p>
-    <p><canvas id='topview' width='500' height='500'></canvas></p>
+    <table>
+      <tr>
+        <td>
+          <table>
+            <tr>
+              <td colspan='2' align='center'>
+                <input type='submit' value='^' onClick='goForward()'/>
+              </td>
+            </tr>
+            <tr>
+              <td align='center'>
+                <input type='submit' value='<' onClick='turnLeft()'/>
+                <input type='submit' value='>' onClick='turnRight()'/>
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2' align='center'>
+                <input type='submit' value='v' onClick='goBack()'/>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <canvas id='draw' width='768' height='768'></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          <center>
+            <canvas id='topview' width='500' height='500'></canvas>
+          </center>
+        </td>
+      </tr>
+    </table>
+    <p>
   </center>
   <script>
-function drawit(color, c) {
-    // http://www.w3schools.com/html5/html5_ref_canvas.asp
-    if (!c) c = '#draw';
-    c = $(c)[0];
-    ctx = c.getContext('2d');
-    ctx.clearRect(1,1,c.width-1,c.height-1);
-    ctx.moveTo(1, 1);
-    ctx.lineTo(c.width-1,1);
-    ctx.lineTo(c.width-1,c.height-1);
-    ctx.lineTo(1,c.height-1);
-    ctx.lineTo(1,1);
-    ctx.lineTo(c.width-1,c.height-1);
-    ctx.moveTo(c.width-1,1);
-    ctx.lineTo(1,c.height-1);
-    ctx.strokeStyle=color;
-    ctx.stroke();
+
+function draw() {
+    maze.draw3d(canvas3d, pos, dir);
 }
-var colors = ['purple','blue','green','orange','red'];
-var idx = 0;
-function drawloop(time, c) {
-    drawit(colors[idx++], c);
-    if (idx >= colors.length) idx = 0;
-    if (time) window.setTimeout(function(){drawloop(time);}, time);
+
+function maybeUpdate(i, j) {
+    if (i>=0 && i<maze.width && j>=0 && j<maze.height) {
+        pos.i = i;
+        pos.j = j;
+        draw();
+    }
 }
-drawloop(null);
-//drawloop(null,'#topview')
+
+function goForward() {
+    maybeUpdate(pos.i + dir.i, pos.j + dir.j);
+}
+function goBack() {
+    maybeUpdate(pos.i + dir.i, pos.j - dir.j);
+}
+function turnRight() {
+    di = dir.i;
+    dir.i = -dir.j;
+    dir.j = di;
+    draw();
+}
+function turnLeft() {
+    di = dir.i;
+    dir.i = dir.j;
+    dir.j = -di;
+    draw();
+
+}
+
 
 // Alternating horizontal and vertical wals
 map = ["----------",
@@ -59,7 +100,6 @@ map = ["----------",
        "| |       |",
        "----------"]
 
-// The old way
 var maze = new Maze(map);
 var canvas = $('#topview')[0];
 maze.edit(canvas);

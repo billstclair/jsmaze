@@ -245,14 +245,15 @@ Maze.prototype.clickListener = function(e, canvas) {
         vert = maze.vert;
         i = Math.round(i);
         j = Math.floor(j);
-        if (i==0 || i>=maze.width) return;
+        if (i<=0 || i>=maze.width || j<=0 || j>=maze.height) return;
+        
         vert[j][i] = vert[j][i] ? 0 : 1;
     } else {
         // It's a horizontal line
         horiz = maze.horiz;
         i = Math.floor(i);
         j = Math.round(j);
-        if (j==0 || j>=maze.height) return;
+        if (i<=0 || i>=maze.height || j<=0 || j>=maze.height) return;
         horiz[j][i] = horiz[j][i] ? 0 : 1;
     }
 
