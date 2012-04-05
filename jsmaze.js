@@ -236,24 +236,24 @@ Maze.prototype.clickListener = function(e, canvas) {
     var x = pos.x - offset.left
     var y = pos.y - offset.top;
 
-    var i = (y * maze.height / canvas.height);
-    var j = (x * maze.width / canvas.width);
+    var i = (x * maze.width / canvas.width);
+    var j = (y * maze.height / canvas.height);
     var diffi = Math.abs(rem0(i, Math.floor(i)) - 0.5);
     var diffj = Math.abs(rem0(j, Math.floor(j)) - 0.5);
-    if (diffi < diffj) {
+    if (diffj < diffi) {
         // It's a vertical line
         vert = maze.vert;
-        i = Math.floor(i);
-        j = Math.round(j);
-        //alert('vert, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
-        vert[i][j] = vert[i][j] ? 0 : 1;
+        i = Math.round(i);
+        j = Math.floor(j);
+        if (i==0 || i>=maze.width) return;
+        vert[j][i] = vert[j][i] ? 0 : 1;
     } else {
         // It's a horizontal line
         horiz = maze.horiz;
-        i = Math.round(i);
-        j = Math.floor(j);
-        //alert('horiz, diffi:'+diffi+', diffj:'+diffj+', i:'+i+', j:'+j);
-        horiz[i][j] = horiz[i][j] ? 0 : 1;
+        i = Math.floor(i);
+        j = Math.round(j);
+        if (j==0 || j>=maze.height) return;
+        horiz[j][i] = horiz[j][i] ? 0 : 1;
     }
 
     maze.topdraw(canvas);
@@ -281,4 +281,150 @@ Maze.prototype.toMap = function() {
     return map;
 }
 
-//Maze.prototype.view3d(canvas, 
+// Values for draw3d() direction arg
+Maze.UP = {i:0, j:-1};
+Maze.DOWN = {i:0, j:1};
+Maze.RIGHT = {i:1, j:0};
+Maze.LEFT = {i:-1, j:0};
+
+Maze.prototype.draw3d = function(canvas, pos, direction) {
+    var ctx = canvas.getContext('2d');
+    var width = canvas.width-2;
+    var height = canvas.height-2;
+    var left = 1;
+    var top = 1;
+    var vert = this.vert;
+    var horiz = this.horiz;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left+width, top);
+    ctx.lineTo(left+width, top+height);
+    ctx.lineTo(left, top+height);
+    ctx.lineTo(left, top);
+
+    var maxsteps = 10;
+    var factor = 0.8;
+    var sizex = width/2;
+    var sizey = height/2;
+
+    var sumx = 1;
+    var sumy = 1;
+    for (var s=1; s<maxsteps; s++) {
+        sizex = sizex * factor;
+        sizey = sizey * factor;
+        sumx += sizex;
+        sumy += sizey;
+    }
+    sizex = width/2;
+    sizey = height/2;
+    var cx = sizex/sumx;
+    var cy = sizey/sumy;
+
+    var i = pos.i;
+    var j = pos.j;
+    var di = direction.i;
+    var dj = direction.j
+    var x = 0;
+    var y = 0;
+
+    var dx = sizex * cx;
+    var dy = sizey * cy;
+    var nextx = x + dx;
+    var nexty = y + dy;
+    var lastxLeft = x;
+    var lastyLeft = y;
+    var lastxRight = x;
+    var lastyRight = y;
+    var lastWallLeft = true;
+    var lastWallRight = true;
+
+    /*** Temporary until code below is done ***/
+    ctx.strokeStyle='black';
+    ctx.stroke();
+    return;
+
+    // Loop
+    for (s=1; s<maxsteps; s++) {
+        dx = dx * cx;
+        dy = dy * cy;
+        x = nextx;
+        y = nexty;
+        nextx = x + dx;
+        nexty = y + dy;
+        if (di ? vert[j][di>0 ? i+1 : i] : horiz[dj>0 ? j+1 : j][i]) {
+            // At end wall
+            if (lastWallLeft) {
+                this.drawEndFromWallLeft(
+                    ctx, x, y, nextx, nexty, left, top, width, height);
+            } else {
+                this.drawEndFromDoorLeft(
+                    ctx, lastxLeft, nextx, nexty, left, top, width, height);
+            }
+            if (lastWallRight) {
+                this.drawEndFromWallRight(
+                    ctx, x, y, nextx, nexty, left, top, width, height);
+            } else {
+                this.drawEndFromDoorRight(
+                    ctx, lastxRight, nextx, nexty, left, top, width, height);
+            }
+            break;
+        } else {
+            if (di ? horiz[j][di>0 ? i : i+1] : vert[dj>0 ? j : j+1][i]) {
+                // Draw left wall
+                if (!lastWallLeft) {
+                    this.drawNewWallLeft(
+                        ctx, x, y, lastxLeft, left, top, width, height);
+                } 
+                this.drawWallLeft(
+                    ctx, x, y, nextx, nexty, left, top, width, height);
+            } else {
+                // Draw left door
+                if (lastWallLeft) {
+                    this.drawNewWallLeft(
+                        ctx, lastxLeft, lastyLeft, false, left, top, width, height);
+                }
+                lastxLeft = x;
+                lastyLeft = y;
+            }
+            if (di ? horiz[j][di>0 ? i+1 : i] : vert[dj>0 ? j+1 : j][i]) {
+                // Draw right wall
+                if (!lastWallRight) {
+                    this.drawNewWallRight(
+                        ctx, x, y, lastxRight, left, top, width, height);
+                } 
+                this.drawWallRight(
+                    ctx, x, y, nextx, nexty, left, top, width, height);
+            } else {
+                // Draw right door
+                if (lastWallRight) {
+                    this.drawNewWallRight(
+                        ctx, lastx, lastyRight, false, left, top, width, height);
+                }
+                lastxRight = x;
+                lastyRight = y;
+            }
+        }
+        i += di;
+        j += dj;
+        if (i<0 || i>width || j<0 || j>height) break;
+    }
+
+    ctx.strokeStyle='black';
+    ctx.stroke();
+}
+
+Maze.prototype.drawWallRight = function(ctx, x, y, nextx, nexty, left, top, width, height) {
+    ctx.moveTo(left+width-x, top+y);
+    ctx.lineTo(left+width-nextx, top+nexty);
+    ctx.moveTo(left+width-x, top+height-y);
+    ctx.lineTo(left+width-nextx, top+height-nexty);
+}
+
+Maze.prototype.drawWallLeft = function(ctx, x, y, nextx, nexty, left, top, width, height) {
+    ctx.moveTo(left+x, top+y);
+    ctx.lineTo(left+nextx, top+nexty);
+    ctx.moveTo(left+x, top+height-y);
+    ctx.lineTo(left+nextx, top+height-nexty);
+}

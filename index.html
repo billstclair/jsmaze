@@ -5,8 +5,8 @@
 </head>
 <body>
   <center>
+    <p><canvas id='draw' width='768' height='768'></canvas></p>
     <p><canvas id='topview' width='500' height='500'></canvas></p>
-    <p><canvas id='draw' width='500' height='500'></canvas></p>
   </center>
   <script>
 function drawit(color, c) {
@@ -58,9 +58,15 @@ map = ["----------",
        "----------"]
 
 // The old way
-maze = new Maze(map);
-canvas = $('#topview')[0];
+var maze = new Maze(map);
+var canvas = $('#topview')[0];
 maze.edit(canvas);
+
+var canvas3d = $('#draw')[0];
+var pos = {i:0, j:0};
+var dir = Maze.DOWN;
+maze.draw3d(canvas3d, pos, dir);
+
   </script>
 </body>
 </html>
