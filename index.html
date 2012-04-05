@@ -13,24 +13,48 @@
           <table>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='^' onClick='goForward()'/>
+                <input type='submit' value='For ^ ward' onClick='goForward()'/>
+                <br/><br/>
               </td>
             </tr>
             <tr>
               <td align='center'>
-                <input type='submit' value='<' onClick='turnLeft()'/>
-                <input type='submit' value='>' onClick='turnRight()'/>
+                <input type='submit' value='< Turn' onClick='turnLeft()'/>
+                <input type='submit' value='Turn >' onClick='turnRight()'/>
               </td>
             </tr>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='v' onClick='goBack()'/>
+                <br/>
+                <input type='submit' value='Ba v ck' onClick='goBack()'/>
               </td>
             </tr>
           </table>
         </td>
         <td>
           <canvas id='draw' width='768' height='768'></canvas>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td colspan='2' align='center'>
+                <input type='submit' value='For ^ ward' onClick='goForward()'/>
+                <br/><br/>
+              </td>
+            </tr>
+            <tr>
+              <td align='center'>
+                <input type='submit' value='< Turn' onClick='turnLeft()'/>
+                <input type='submit' value='Turn >' onClick='turnRight()'/>
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2' align='center'>
+                <br/>
+                <input type='submit' value='Ba v ck' onClick='goBack()'/>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
       <tr>
@@ -59,10 +83,22 @@ function maybeUpdate(i, j) {
 }
 
 function goForward() {
-    maybeUpdate(pos.i + dir.i, pos.j + dir.j);
+    var i = pos.i;
+    var j = pos.j;
+    if (dir.i ?
+        !maze.vert[j][(dir.i>0) ? i+1 : i] :
+        !maze.horiz[(dir.j>0) ? j+1 : j][i]) {
+        maybeUpdate(i + dir.i, j + dir.j);
+    }
 }
 function goBack() {
-    maybeUpdate(pos.i + dir.i, pos.j - dir.j);
+    var i = pos.i;
+    var j = pos.j;
+    if (dir.i ?
+        !maze.vert[j][(dir.i>0) ? i : i+1] :
+        !maze.horiz[(dir.j>0) ? j : j+1][i]) {
+        maybeUpdate(i - dir.i, j - dir.j);
+    }
 }
 function turnRight() {
     di = dir.i;
