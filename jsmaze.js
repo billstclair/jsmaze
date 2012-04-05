@@ -287,6 +287,13 @@ Maze.DOWN = {i:0, j:1};
 Maze.RIGHT = {i:1, j:0};
 Maze.LEFT = {i:-1, j:0};
 
+var round = Math.round;
+
+var alertp = false;
+function maybeAlert(msg) {
+    if (alertp) alert(msg);
+}
+
 Maze.prototype.draw3d = function(canvas, pos, direction) {
     var ctx = canvas.getContext('2d');
     var width = canvas.width-2;
@@ -304,14 +311,14 @@ Maze.prototype.draw3d = function(canvas, pos, direction) {
     ctx.lineTo(left, top+height);
     ctx.lineTo(left, top);
 
-    var maxsteps = 10;
+    var maxsteps = 15;
     var factor = 0.8;
     var sizex = width/2;
     var sizey = height/2;
 
-    var sumx = 1;
-    var sumy = 1;
-    for (var s=1; s<maxsteps; s++) {
+    var sumx = 0;
+    var sumy = 0;
+    for (var s=1; s<=maxsteps; s++) {
         sizex = sizex * factor;
         sizey = sizey * factor;
         sumx += sizex;
@@ -329,85 +336,85 @@ Maze.prototype.draw3d = function(canvas, pos, direction) {
     var x = 0;
     var y = 0;
 
-    var dx = sizex * cx;
-    var dy = sizey * cy;
+    var dx = sizex * factor * cx;
+    var dy = sizey * factor * cy;
     var nextx = x + dx;
     var nexty = y + dy;
-    var lastxLeft = x;
-    var lastyLeft = y;
-    var lastxRight = x;
-    var lastyRight = y;
+    var lastxLeft = null;
+    var lastyLeft = null;
+    var lastxRight = null;
+    var lastyRight = null;
     var lastWallLeft = true;
     var lastWallRight = true;
 
-    /*** Temporary until code below is done ***/
-    ctx.strokeStyle='black';
-    ctx.stroke();
-    return;
-
     // Loop
     for (s=1; s<maxsteps; s++) {
-        dx = dx * cx;
-        dy = dy * cy;
-        x = nextx;
-        y = nexty;
         nextx = x + dx;
         nexty = y + dy;
+
+        maybeAlert('i:'+i+', j:'+j+', x:'+round(x)+', y:'+round(y)+', nextx:'+round(nextx)+', nexty:'+round(nexty));
+
+        if (di ? horiz[di>0 ? j : j+1][i] : vert[j][dj>0 ? i+1 : i]) {
+            // Draw left wall
+            if (!lastWallLeft) {
+                this.drawNewWallLeft(
+                    ctx, x, y, lastxLeft, left, top, width, height);
+            }
+            this.drawWallLeft(
+                ctx, x, y, nextx, nexty, left, top, width, height);
+            lastWallLeft = true;
+        } else {
+            // Draw left door
+            this.drawNewWallLeft(
+                ctx, x, y, lastWallLeft?null:lastxLeft, left, top, width, height);
+            lastxLeft = x;
+            lastyLeft = y;
+            lastWallLeft = false;
+        }
+        if (di ? horiz[di>0 ? j+1 : j][i] : vert[j][dj>0 ? i : i+1]) {
+            // Draw right wall
+            if (!lastWallRight) {
+                this.drawNewWallRight(
+                    ctx, x, y, lastxRight, left, top, width, height);
+            } 
+            this.drawWallRight(
+                ctx, x, y, nextx, nexty, left, top, width, height);
+            lastWallRight = true;
+        } else {
+            // Draw right door
+            this.drawNewWallRight(
+                ctx, x, y, lastWallRight?null:lastxRight, left, top, width, height);
+            lastxRight = x;
+            lastyRight = y;
+            lastWallRight = false;
+        }
+
+        x = nextx;
+        y = nexty;
         if (di ? vert[j][di>0 ? i+1 : i] : horiz[dj>0 ? j+1 : j][i]) {
             // At end wall
+            this.drawEndFloorCeiling(
+                ctx, x, y, left, top, width, height);
             if (lastWallLeft) {
                 this.drawEndFromWallLeft(
-                    ctx, x, y, nextx, nexty, left, top, width, height);
+                    ctx, x, y, left, top, width, height);
             } else {
                 this.drawEndFromDoorLeft(
-                    ctx, lastxLeft, nextx, nexty, left, top, width, height);
+                    ctx, x, y, lastxLeft, left, top, width, height);
             }
             if (lastWallRight) {
                 this.drawEndFromWallRight(
-                    ctx, x, y, nextx, nexty, left, top, width, height);
+                    ctx, x, y, left, top, width, height);
             } else {
                 this.drawEndFromDoorRight(
-                    ctx, lastxRight, nextx, nexty, left, top, width, height);
+                    ctx, x, y, lastxRight, left, top, width, height);
             }
             break;
-        } else {
-            if (di ? horiz[j][di>0 ? i : i+1] : vert[dj>0 ? j : j+1][i]) {
-                // Draw left wall
-                if (!lastWallLeft) {
-                    this.drawNewWallLeft(
-                        ctx, x, y, lastxLeft, left, top, width, height);
-                } 
-                this.drawWallLeft(
-                    ctx, x, y, nextx, nexty, left, top, width, height);
-            } else {
-                // Draw left door
-                if (lastWallLeft) {
-                    this.drawNewWallLeft(
-                        ctx, lastxLeft, lastyLeft, false, left, top, width, height);
-                }
-                lastxLeft = x;
-                lastyLeft = y;
-            }
-            if (di ? horiz[j][di>0 ? i+1 : i] : vert[dj>0 ? j+1 : j][i]) {
-                // Draw right wall
-                if (!lastWallRight) {
-                    this.drawNewWallRight(
-                        ctx, x, y, lastxRight, left, top, width, height);
-                } 
-                this.drawWallRight(
-                    ctx, x, y, nextx, nexty, left, top, width, height);
-            } else {
-                // Draw right door
-                if (lastWallRight) {
-                    this.drawNewWallRight(
-                        ctx, lastx, lastyRight, false, left, top, width, height);
-                }
-                lastxRight = x;
-                lastyRight = y;
-            }
         }
         i += di;
         j += dj;
+        dx = dx * factor;
+        dy = dy * factor;
         if (i<0 || i>width || j<0 || j>height) break;
     }
 
@@ -416,6 +423,11 @@ Maze.prototype.draw3d = function(canvas, pos, direction) {
 }
 
 Maze.prototype.drawWallRight = function(ctx, x, y, nextx, nexty, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    nextx = round(nextx);
+    nexty = round(nexty);
+    maybeAlert(JSON.stringify(['drawWallRight',x,y,nextx,nexty]));
     ctx.moveTo(left+width-x, top+y);
     ctx.lineTo(left+width-nextx, top+nexty);
     ctx.moveTo(left+width-x, top+height-y);
@@ -423,8 +435,95 @@ Maze.prototype.drawWallRight = function(ctx, x, y, nextx, nexty, left, top, widt
 }
 
 Maze.prototype.drawWallLeft = function(ctx, x, y, nextx, nexty, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    nextx = round(nextx);
+    nexty = round(nexty);
+    maybeAlert(JSON.stringify(['drawWallLeft',x,y,nextx,nexty]));
     ctx.moveTo(left+x, top+y);
     ctx.lineTo(left+nextx, top+nexty);
     ctx.moveTo(left+x, top+height-y);
     ctx.lineTo(left+nextx, top+height-nexty);
+}
+
+Maze.prototype.drawNewWallLeft = function(ctx, x, y, lastxLeft, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    if (lastxLeft != null) lastxLeft = round(lastxLeft);
+    maybeAlert(JSON.stringify(['drawNewWallLeft',x,y,lastxLeft]));
+    if (lastxLeft != null) {
+        ctx.moveTo(left+lastxLeft, top+y);
+        ctx.lineTo(left+x, top+y);
+    } else {
+        ctx.moveTo(left+x, top+y);
+    }
+    ctx.lineTo(left+x, top+height-y);
+    if (lastxLeft != null) {
+        ctx.lineTo(left+lastxLeft, top+height-y);
+    }
+}
+
+Maze.prototype.drawNewWallRight = function(ctx, x, y, lastxRight, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    if (lastxRight != null) lastxRight = round(lastxRight);
+    maybeAlert(JSON.stringify(['drawNewWallRight',x,y,lastxRight]));
+    if (lastxRight != null) {
+        ctx.moveTo(left+width-lastxRight, top+y);
+        ctx.lineTo(left+width-x, top+y);
+    } else {
+        ctx.moveTo(left+width-x, top+y);
+    }
+    ctx.lineTo(left+width-x, top+height-y);
+    if (lastxRight != null) {
+        ctx.lineTo(left+width-lastxRight, top+height-y);
+    }
+}
+
+Maze.prototype.drawEndFloorCeiling = function(ctx, x, y, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    maybeAlert(JSON.stringify(['drawEndFloorCeiling',x,y]));
+    ctx.moveTo(left+x, top+y);
+    ctx.lineTo(left+width-x, top+y);
+    ctx.moveTo(left+width-x, top+height-y);
+    ctx.lineTo(left+x, top+height-y);
+}
+
+Maze.prototype.drawEndFromWallLeft = function(ctx, x, y, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    maybeAlert(JSON.stringify(['drawEndFromWallLeft',x,y]));
+    ctx.moveTo(left+x, top+y);
+    ctx.lineTo(left+x, top+height-y);
+}
+
+Maze.prototype.drawEndFromWallRight = function(ctx, x, y, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    maybeAlert(JSON.stringify(['drawEndFromWallRight',x,y]));
+    ctx.moveTo(left+width-x, top+y);
+    ctx.lineTo(left+width-x, top+height-y);
+}
+
+Maze.prototype.drawEndFromDoorLeft = function(ctx, x, y, lastxLeft, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    lastxLeft = round(lastxLeft);
+    maybeAlert(JSON.stringify(['drawEndFromDoorLeft',x,y,lastxLeft]));
+    ctx.moveTo(left+x, top+y);
+    ctx.lineTo(left+lastxLeft, top+y);
+    ctx.moveTo(left+x, top+height-y);
+    ctx.lineTo(left+lastxLeft, top+height-y);
+}
+
+Maze.prototype.drawEndFromDoorRight = function(ctx, x, y, lastxRight, left, top, width, height) {
+    x = round(x);
+    y = round(y);
+    lastxRight = round(lastxRight);
+    maybeAlert(JSON.stringify(['drawEndFromDoorRight',x,y,lastxRight]));
+    ctx.moveTo(left+width-x, top+y);
+    ctx.lineTo(left+width-lastxRight, top+y);
+    ctx.moveTo(left+width-x, top+height-y);
+    ctx.lineTo(left+width-lastxRight, top+height-y);
 }
