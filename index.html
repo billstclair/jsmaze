@@ -10,28 +10,6 @@
     <table>
       <tr>
         <td>
-          <table>
-            <tr>
-              <td colspan='2' align='center'>
-                <input type='submit' value='^' onClick='maze.goForward()'/>
-              </td>
-            </tr>
-            <tr>
-              <td align='center'>
-                <input type='submit' value='<' onClick='maze.turnLeft()'/>
-              </td>
-              <td>
-                <input type='submit' value='>' onClick='maze.turnRight()'/>
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2' align='center'>
-                <input type='submit' value='v' onClick='maze.goBack()'/>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td>
           <center>
             <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
             To control with keyboard, click on image above.<br/>
@@ -39,34 +17,11 @@
             To change maze, click to toggle walls below.
           </center>
         </td>
-        <td>
-          <table>
-            <tr>
-              <td colspan='2' align='center'>
-                <input type='submit' value='^' onClick='maze.goForward()'/>
-              </td>
-            </tr>
-            <tr>
-              <td align='center'>
-                <input type='submit' value='<' onClick='maze.turnLeft()'/>
-              </td>
-              <td>
-                <input type='submit' value='>' onClick='maze.turnRight()'/>
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2' align='center'>
-                <input type='submit' value='v' onClick='maze.goBack()'/>
-              </td>
-            </tr>
-          </table>
-        </td>
       </tr>
       <tr>
-        <td>&nbsp;</td>
         <td>
           <center>
-            <canvas id='topview' width='300' height='300' tabindex='2'></canvas>
+            <canvas id='topview' width='300' height='300'></canvas>
           </center>
         </td>
       </tr>
@@ -105,6 +60,8 @@ var pos = {i:0, j:0};
 var dir = Maze.DOWN;
 maze.draw3d(canvas3d, pos, dir);
 maze.topdrawpos();
+
+canvas3d.focus();
 
   </script>
 </body>

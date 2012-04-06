@@ -203,6 +203,7 @@ Maze.prototype.topdraw = function(canvas) {
 
     ctx.strokeStyle='black';
     ctx.stroke();
+    this.topdrawpos();
 };
 
 Maze.prototype.topdrawpos = function(erase) {
@@ -345,6 +346,9 @@ Maze.prototype.clickListener = function(e, canvas) {
 
     maze.topdraw();
     maze.draw3d();
+    if (maze.threeDCanvas()) {
+        window.setTimeout(function(){maze.threeDCanvas().focus();}, 1);
+    }
 }
 
 Maze.prototype.toMap = function() {
@@ -445,8 +449,8 @@ Maze.prototype.draw3d = function(canvas, pos, dir) {
     var lastyLeft = null;
     var lastxRight = null;
     var lastyRight = null;
-    var lastWallLeft = true;
-    var lastWallRight = true;
+    var lastWallLeft = false;
+    var lastWallRight = false;
 
     // Loop
     for (s=1; s<maxsteps; s++) {
@@ -634,10 +638,22 @@ Maze.prototype.addKeyListener = function(canvas) {
     var maze = this;
     var listener = function(event) {
         maze.doKeyListener(event);
+        if (event.preventDefault != undefined) {
+            event.preventDefault();
+        }
+        false;
     }
     this.keyListener = listener;
     this.keyListenerCanvas = canvas;
     canvas.addEventListener('keydown', listener, false);
+    listener = function(event) {
+        maze.do3dTouch(event, canvas);
+        if (event.preventDefault != undefined) {
+            event.preventDefault();
+        }
+    }
+    this.keyTouchListener = listener;
+    canvas.addEventListener('touchstart', listener, false);
 }
 
 Maze.prototype.removeKeyListener = function() {
@@ -647,7 +663,24 @@ Maze.prototype.removeKeyListener = function() {
         this.keyListener = null;
         this.keyListenerCanvas = null;
         canvas.removeEventListener('keydown', listener, false);
+        canvas.removeEventListener('touchStart', listener, false);
     }
+}
+
+Maze.prototype.do3dTouch = function(event, canvas) {
+    var pos = eventPos(event);
+    if (!pos) return;
+
+    var offset = $(canvas).offset();
+    var x = pos.x - offset.left
+    var y = pos.y - offset.top;
+    w4 = canvas.width / 4;
+    h4 = canvas.height / 4;
+    //alert('w4:'+w4+', h4:'+h4+', x:'+x+', y:'+y);
+    if (x <= w4) this.turnLeft();
+    else if (x >= canvas.width-w4) this.turnRight();
+    else if (y < h4) this.goForward();
+    else if (y > canvas.height-h4) this.goBack();    
 }
 
 var keyevent = null;
