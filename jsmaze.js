@@ -109,7 +109,40 @@ Maze.prototype.clone = function() {
     return maze;
 }
 
+//
+// Drawing functions
+//
+
+Maze.prototype.initPos = function() {
+    if (!this.pos) this.pos = {i:0,j:0};
+    if (!this.dir) this.dir = {i:0,j:1};
+}
+
+Maze.prototype.topViewCanvas = function(canvas) {
+    if (canvas == undefined) {
+        return this.pTopViewCanvas==undefined ? null : this.pTopViewCanvas;
+    }
+    this.pTopViewCanvas = canvas;
+    if (canvas) this.topdraw();
+    return canvas;
+}
+
+Maze.prototype.threeDCanvas = function(canvas) {
+    if (canvas == undefined) {
+        return this.pThreeDCanvas==undefined ? null : this.pThreeDCanvas;
+    }
+    this.pThreeDCanvas = canvas;
+    if (canvas) {
+        this.initPos();
+        this.addKeyListener(canvas);
+        this.draw3d();
+    }
+    return canvas;
+}
+
 Maze.prototype.topdraw = function(canvas) {
+    if (canvas == undefined) canvas = this.topViewCanvas();
+    if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var width = canvas.width-2;
     var height = canvas.height-2;
@@ -207,7 +240,7 @@ function rem0(x, y) {
 }
 
 Maze.prototype.edit = function(canvas) {
-    if (document.jsmazeEditListener) return;
+    if (this.editListener) return;
 
     var maze = this;
     var listener = function(e) {
@@ -215,16 +248,16 @@ Maze.prototype.edit = function(canvas) {
     };
     document.addEventListener('mousedown', listener, false); // PC
     canvas.addEventListener('touchstart', listener, false);  // touch screen
-    document.jsmazeEditListener = listener;
-    this.topdraw(canvas);
+    this.editListener = listener;
+    this.topViewCanvas(canvas);
 }
 
 Maze.prototype.endEdit = function(canvas) {
-    var listener = document.jsmazeEditListener;
+    var listener = this.editListener;
     if (!listener) return;
     document.removeEventListener('mousedown', listener, false);
     canvas.removeEventListener('touchstart', listener, false);
-    document.jsmazeListener = null;
+    this.editListener = null;
 }
 
 Maze.prototype.clickListener = function(e, canvas) {
@@ -245,7 +278,7 @@ Maze.prototype.clickListener = function(e, canvas) {
         vert = maze.vert;
         i = Math.round(i);
         j = Math.floor(j);
-        if (i<=0 || i>=maze.width || j<=0 || j>=maze.height) return;
+        if (i<=0 || i>=maze.width || j<0 || j>=maze.height) return;
         
         vert[j][i] = vert[j][i] ? 0 : 1;
     } else {
@@ -253,11 +286,12 @@ Maze.prototype.clickListener = function(e, canvas) {
         horiz = maze.horiz;
         i = Math.floor(i);
         j = Math.round(j);
-        if (i<=0 || i>=maze.height || j<=0 || j>=maze.height) return;
+        if (i<0 || i>=maze.height || j<=0 || j>=maze.height) return;
         horiz[j][i] = horiz[j][i] ? 0 : 1;
     }
 
-    maze.topdraw(canvas);
+    maze.topdraw();
+    maze.draw3d();
 }
 
 Maze.prototype.toMap = function() {
@@ -295,7 +329,20 @@ function maybeAlert(msg) {
     if (alertp) alert(msg);
 }
 
-Maze.prototype.draw3d = function(canvas, pos, direction) {
+Maze.prototype.draw3d = function(canvas, pos, dir) {
+    this.initPos();
+    if (canvas == undefined) {
+        canvas = this.threeDCanvas();
+    } else {
+        this.threeDCanvas(canvas);
+    }
+    if (pos == undefined) pos = this.pos;
+    else this.pos = pos;
+    if (dir == undefined) dir = this.dir;
+    else this.dir = dir;
+        
+    if (!canvas) return;
+
     var ctx = canvas.getContext('2d');
     var width = canvas.width-2;
     var height = canvas.height-2;
@@ -332,8 +379,8 @@ Maze.prototype.draw3d = function(canvas, pos, direction) {
 
     var i = pos.i;
     var j = pos.j;
-    var di = direction.i;
-    var dj = direction.j
+    var di = dir.i;
+    var dj = dir.j
     var x = 0;
     var y = 0;
 
@@ -527,4 +574,83 @@ Maze.prototype.drawEndFromDoorRight = function(ctx, x, y, lastxRight, left, top,
     ctx.lineTo(left+width-lastxRight, top+y);
     ctx.moveTo(left+width-x, top+height-y);
     ctx.lineTo(left+width-lastxRight, top+height-y);
+}
+
+Maze.prototype.addKeyListener = function(canvas) {
+    this.removeKeyListener();
+    var maze = this;
+    var listener = function(event) {
+        maze.doKeyListener(event);
+    }
+    this.keyListener = listener;
+    this.keyListenerCanvas = canvas;
+    canvas.addEventListener('keydown', listener, false);
+}
+
+Maze.prototype.removeKeyListener = function() {
+    var listener = this.keyListener;
+    if (listener && listener!=undefined) {
+        var canvas = this.keyListenerCanvas;
+        this.keyListener = null;
+        this.keyListenerCanvas = null;
+        canvas.removeEventListener('keydown', listener, false);
+    }
+}
+
+var keyevent = null;
+
+Maze.prototype.doKeyListener = function(event) {
+    keyevent = event;
+    var key = event.key;
+    if (key == undefined) key = event.keyCode;
+    // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+    if (key==69 || key==73 || key==38) this.goForward();
+    else if (key==68 || key==75 || key==40) this.goBack();
+    else if (key==83 || key==74 || key==37) this.turnLeft();
+    else if (key==70 || key==76 || key==39) this.turnRight();
+}
+
+Maze.prototype.move = function(i, j) {
+    if (i>=0 && i<this.width && j>=0 && j<this.height) {
+        this.pos.i = i;
+        this.pos.j = j;
+        this.draw3d();
+        this.topdraw();
+    }
+}
+
+Maze.prototype.goForward = function() {
+    var i = this.pos.i;
+    var j = this.pos.j;
+    var dir = this.dir;
+    if (dir.i ?
+        !maze.vert[j][(dir.i>0) ? i+1 : i] :
+        !maze.horiz[(dir.j>0) ? j+1 : j][i]) {
+        this.move(i + dir.i, j + dir.j);
+    }
+}
+
+Maze.prototype.goBack = function() {
+    var i = this.pos.i;
+    var j = this.pos.j;
+    var dir = this.dir
+    if (dir.i ?
+        !maze.vert[j][(dir.i>0) ? i : i+1] :
+        !maze.horiz[(dir.j>0) ? j : j+1][i]) {
+        this.move(i - dir.i, j - dir.j);
+    }
+}
+
+Maze.prototype.turnRight = function() {
+    di = this.dir.i;
+    this.dir.i = -this.dir.j;
+    this.dir.j = di;
+    this.draw3d();
+}
+
+Maze.prototype.turnLeft = function() {
+    di = this.dir.i;
+    this.dir.i = this.dir.j;
+    this.dir.j = -di;
+    this.draw3d();
 }

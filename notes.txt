@@ -1,3 +1,6 @@
+http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
+  Giving a canvas the focus
+
 The Locker Project - http://lockerproject.org/
 node.js package manager - http://npmjs.org/
 peer-to-peer networking - http://telehash.org/

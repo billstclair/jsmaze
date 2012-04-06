@@ -13,45 +13,49 @@
           <table>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='For ^ ward' onClick='goForward()'/>
+                <input type='submit' value='^' onClick='maze.goForward()'/>
               </td>
             </tr>
             <tr>
               <td align='center'>
-                <input type='submit' value='< Turn' onClick='turnLeft()'/>
+                <input type='submit' value='<' onClick='maze.turnLeft()'/>
               </td>
               <td>
-                <input type='submit' value='Turn >' onClick='turnRight()'/>
+                <input type='submit' value='>' onClick='maze.turnRight()'/>
               </td>
             </tr>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='Ba v ck' onClick='goBack()'/>
+                <input type='submit' value='v' onClick='maze.goBack()'/>
               </td>
             </tr>
           </table>
         </td>
         <td>
-          <canvas id='draw' width='768' height='768'></canvas>
+          <center>
+            <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
+            To control with keyboard, click on image above.<br/>
+            Controls: IJKL, ESDF, arrow keys.
+          </center>
         </td>
         <td>
           <table>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='For ^ ward' onClick='goForward()'/>
+                <input type='submit' value='^' onClick='maze.goForward()'/>
               </td>
             </tr>
             <tr>
               <td align='center'>
-                <input type='submit' value='< Turn' onClick='turnLeft()'/>
+                <input type='submit' value='<' onClick='maze.turnLeft()'/>
               </td>
               <td>
-                <input type='submit' value='Turn >' onClick='turnRight()'/>
+                <input type='submit' value='>' onClick='maze.turnRight()'/>
               </td>
             </tr>
             <tr>
               <td colspan='2' align='center'>
-                <input type='submit' value='Ba v ck' onClick='goBack()'/>
+                <input type='submit' value='v' onClick='maze.goBack()'/>
               </td>
             </tr>
           </table>
@@ -61,7 +65,7 @@
         <td>&nbsp;</td>
         <td>
           <center>
-            <canvas id='topview' width='500' height='500'></canvas>
+            <canvas id='topview' width='300' height='300' tabindex='2'></canvas>
           </center>
         </td>
       </tr>
@@ -69,51 +73,6 @@
     <p>
   </center>
   <script>
-
-function draw() {
-    maze.draw3d(canvas3d, pos, dir);
-}
-
-function maybeUpdate(i, j) {
-    if (i>=0 && i<maze.width && j>=0 && j<maze.height) {
-        pos.i = i;
-        pos.j = j;
-        draw();
-    }
-}
-
-function goForward() {
-    var i = pos.i;
-    var j = pos.j;
-    if (dir.i ?
-        !maze.vert[j][(dir.i>0) ? i+1 : i] :
-        !maze.horiz[(dir.j>0) ? j+1 : j][i]) {
-        maybeUpdate(i + dir.i, j + dir.j);
-    }
-}
-function goBack() {
-    var i = pos.i;
-    var j = pos.j;
-    if (dir.i ?
-        !maze.vert[j][(dir.i>0) ? i : i+1] :
-        !maze.horiz[(dir.j>0) ? j : j+1][i]) {
-        maybeUpdate(i - dir.i, j - dir.j);
-    }
-}
-function turnRight() {
-    di = dir.i;
-    dir.i = -dir.j;
-    dir.j = di;
-    draw();
-}
-function turnLeft() {
-    di = dir.i;
-    dir.i = dir.j;
-    dir.j = -di;
-    draw();
-
-}
-
 
 // Alternating horizontal and vertical wals
 map = ["----------",
