@@ -643,10 +643,10 @@ Maze.prototype.addKeyListener = function(canvas) {
     canvas.addEventListener('keydown', listener, false);
     listener = function(event) {
         maze.do3dTouch(event, canvas);
-        event.preventDefault();
     }
     this.keyTouchListener = listener;
     canvas.addEventListener('touchstart', listener, false);
+    canvas.addEventListener('touchend', listener, false);
 }
 
 Maze.prototype.removeKeyListener = function() {
@@ -656,11 +656,18 @@ Maze.prototype.removeKeyListener = function() {
         this.keyListener = null;
         this.keyListenerCanvas = null;
         canvas.removeEventListener('keydown', listener, false);
+        listener = this.keyTouchListener;
+        this.keyTouchListener = null;
         canvas.removeEventListener('touchStart', listener, false);
+        canvas.removeEventListener('touchEnd', listener, false);
     }
 }
 
 Maze.prototype.do3dTouch = function(event, canvas) {
+    if (event.type == 'touchend') {
+        this.touchingAction = false;
+        return;
+    }
     var pos = eventPos(event);
     if (!pos) return;
 
@@ -669,11 +676,23 @@ Maze.prototype.do3dTouch = function(event, canvas) {
     var y = pos.y - offset.top;
     w4 = canvas.width / 4;
     h4 = canvas.height / 4;
-    //alert('w4:'+w4+', h4:'+h4+', x:'+x+', y:'+y);
-    if (x <= w4) this.turnLeft();
-    else if (x >= canvas.width-w4) this.turnRight();
-    else if (y < h4) this.goForward();
-    else if (y > canvas.height-h4) this.goBack();    
+    var action = null;
+    if (x <= w4) action = Maze.prototype.turnLeft;
+    else if (x >= canvas.width-w4) action = Maze.prototype.turnRight;
+    else if (y < h4) action = Maze.prototype.goForward;
+    else if (y > canvas.height-h4) action = Maze.prototype.goBack;
+    if (action) {
+        maze = this;
+        event.preventDefault();
+        this.touchingAction = action;
+        var tof = function() {
+            if (maze.touchingAction) {
+                maze.touchingAction.call(maze);
+                window.setTimeout(tof, 200);
+            }
+        };
+        tof();
+    }
 }
 
 var keyevent = null;
@@ -682,8 +701,8 @@ Maze.prototype.doKeyListener = function(event) {
     keyevent = event;
     var key = event.key;
     if (key == undefined) key = event.keyCode;
-    // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     var nodefault = true;
+    // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     if (key==87 || key==73 || key==38) this.goForward(); // WI^
     else if (key==83 || key==75 || key==40) this.goBack(); // SKv
     else if (key==65 || key==74 || key==37) this.turnLeft(); // AJ<
