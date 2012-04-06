@@ -273,7 +273,6 @@ function eventPos(e) {
     if (touches) {
         // iphone startTouch event
         if (touches.length != 1) return null;
-        //e.preventDefault();
         posx = touches[0].pageX;
         posy = touches[0].pageY;
     } else if (e.pageX || e.pageY) 	{
@@ -638,19 +637,13 @@ Maze.prototype.addKeyListener = function(canvas) {
     var maze = this;
     var listener = function(event) {
         maze.doKeyListener(event);
-        if (event.preventDefault != undefined) {
-            event.preventDefault();
-        }
-        false;
     }
     this.keyListener = listener;
     this.keyListenerCanvas = canvas;
     canvas.addEventListener('keydown', listener, false);
     listener = function(event) {
         maze.do3dTouch(event, canvas);
-        if (event.preventDefault != undefined) {
-            event.preventDefault();
-        }
+        event.preventDefault();
     }
     this.keyTouchListener = listener;
     canvas.addEventListener('touchstart', listener, false);
@@ -690,10 +683,13 @@ Maze.prototype.doKeyListener = function(event) {
     var key = event.key;
     if (key == undefined) key = event.keyCode;
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+    var nodefault = true;
     if (key==87 || key==73 || key==38) this.goForward(); // WI^
     else if (key==83 || key==75 || key==40) this.goBack(); // SKv
     else if (key==65 || key==74 || key==37) this.turnLeft(); // AJ<
     else if (key==68 || key==76 || key==39) this.turnRight(); // DL>
+    else nodefault = false;
+    if (nodefault) event.preventDefault();
 }
 
 Maze.prototype.move = function(i, j) {

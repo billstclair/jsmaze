@@ -53,16 +53,12 @@ map = ["----------",
        "----------"]
 
 var maze = new Maze(map);
+var canvas3d = $('#draw')[0];
+maze.draw3d(canvas3d);
+canvas3d.focus();
+
 var canvas = $('#topview')[0];
 maze.edit(canvas);
-
-var canvas3d = $('#draw')[0];
-var pos = {i:0, j:0};
-var dir = Maze.DOWN;
-maze.draw3d(canvas3d, pos, dir);
-maze.topdrawpos();
-
-canvas3d.focus();
 
   </script>
 </body>
