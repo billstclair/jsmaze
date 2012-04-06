@@ -35,7 +35,8 @@
           <center>
             <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
             To control with keyboard, click on image above.<br/>
-            Controls: IJKL, ESDF, arrow keys.
+            Controls: WASD, IJKL, arrow keys.<br/>
+            To change maze, click to toggle walls below.
           </center>
         </td>
         <td>
@@ -103,6 +104,7 @@ var canvas3d = $('#draw')[0];
 var pos = {i:0, j:0};
 var dir = Maze.DOWN;
 maze.draw3d(canvas3d, pos, dir);
+maze.topdrawpos();
 
   </script>
 </body>

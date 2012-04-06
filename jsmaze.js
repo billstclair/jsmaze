@@ -205,6 +205,59 @@ Maze.prototype.topdraw = function(canvas) {
     ctx.stroke();
 };
 
+Maze.prototype.topdrawpos = function(erase) {
+    if (erase == undefined) erase = false;
+    var canvas = this.topViewCanvas();
+    if (!canvas) return;
+    this.initPos();
+    var pos = this.pos;
+    var dir = this.dir;
+    var width = canvas.width-2;
+    var height = canvas.height-2;
+    var left = 1;
+    var top = 1;
+    var deltax = width/this.width;
+    var deltay = height/this.height;
+    var x = left + (pos.i * deltax) + 4;
+    var y = top + (pos.j * deltay) + 4;
+    deltax -= 8;
+    deltay -= 8;
+    ctx = canvas.getContext('2d');
+    if (erase) {
+        ctx.clearRect(x-2, y-2, deltax+4, deltay+4);
+    } else {
+        ctx.beginPath();
+        if (dir.i) {
+            if (dir.i > 0) {
+                ctx.moveTo(x, y);
+                ctx.lineTo(x+deltax, y+deltay/2);
+                ctx.lineTo(x, y+deltay);
+                ctx.lineTo(x, y);
+            } else {
+                ctx.moveTo(x, y+deltay/2);
+                ctx.lineTo(x+deltax, y);
+                ctx.lineTo(x+deltax, y+deltay);
+                ctx.lineTo(x, y+deltay/2);
+            }
+        } else {
+            if (dir.j > 0) {
+                ctx.moveTo(x, y);
+                ctx.lineTo(x+deltax, y);
+                ctx.lineTo(x+deltax/2, y+deltay);
+                ctx.lineTo(x, y);
+            } else {
+                ctx.moveTo(x+deltax/2, y);
+                ctx.lineTo(x+deltax, y+deltay);
+                ctx.lineTo(x, y+deltay);
+                ctx.lineTo(x+deltax/2, y);
+            }
+        }
+        ctx.strokeStyle='blue';
+        ctx.stroke();
+    }
+    
+}
+
 var lastEvent = 1;
 
 // Necessary for browser compatibility
@@ -604,18 +657,20 @@ Maze.prototype.doKeyListener = function(event) {
     var key = event.key;
     if (key == undefined) key = event.keyCode;
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
-    if (key==69 || key==73 || key==38) this.goForward();
-    else if (key==68 || key==75 || key==40) this.goBack();
-    else if (key==83 || key==74 || key==37) this.turnLeft();
-    else if (key==70 || key==76 || key==39) this.turnRight();
+    if (key==87 || key==73 || key==38) this.goForward(); // WI^
+    else if (key==83 || key==75 || key==40) this.goBack(); // SKv
+    else if (key==65 || key==74 || key==37) this.turnLeft(); // AJ<
+    else if (key==68 || key==76 || key==39) this.turnRight(); // DL>
 }
 
 Maze.prototype.move = function(i, j) {
     if (i>=0 && i<this.width && j>=0 && j<this.height) {
+        this.topdrawpos(true);
         this.pos.i = i;
         this.pos.j = j;
         this.draw3d();
         this.topdraw();
+        this.topdrawpos();
     }
 }
 
@@ -642,15 +697,19 @@ Maze.prototype.goBack = function() {
 }
 
 Maze.prototype.turnRight = function() {
+    this.topdrawpos(true);
     di = this.dir.i;
     this.dir.i = -this.dir.j;
     this.dir.j = di;
     this.draw3d();
+    this.topdrawpos();
 }
 
 Maze.prototype.turnLeft = function() {
+    this.topdrawpos(true);
     di = this.dir.i;
     this.dir.i = this.dir.j;
     this.dir.j = -di;
     this.draw3d();
+    this.topdrawpos();
 }
