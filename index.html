@@ -1,21 +1,18 @@
-im<html>
+<html>
 <head>
   <script src='jquery.min.js'></script>
-  <script src='jsmaze.js'></script>
+  <script src='server/shared/jsmaze.js'></script>
+  <script src='jsClientMaze.js'></script>
   <title>jsMaze</title>
-  <meta name='viewport' content='width=600'/>
+  <meta name='viewport' content='width=720'/>
 </head>
 <body>
   <center>
-    <h2>jsMaze</h2>
     <table>
       <tr>
         <td>
           <center>
             <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
-            To control with keyboard, click on image above.<br/>
-            Controls: WASD, IJKL, arrow keys.<br/>
-            To change maze, click to toggle walls below.
           </center>
         </td>
       </tr>
@@ -23,6 +20,14 @@ im<html>
         <td>
           <center>
             <canvas id='topview' width='300' height='300'></canvas>
+            <h2>jsMaze</h2>
+            <p>To control with keyboard, click on 3d (upper) view.<br/>
+              Controls: WASD, IJKL, arrow keys.<br>
+            On touch screens, tap and hold top, left, right, or bottom
+              of 3d view.<br/>
+            Middle section of 3d view can be used for drag, pinch, or
+              double tap.<br/>
+            To change maze, click to toggle walls on lower view.</p>
           </center>
         </td>
       </tr>
@@ -52,7 +57,7 @@ var map = ["----------",
            "| |       |",
            "----------"]
 
-var maze = new jsmaze.Maze(map);
+var maze = new jsClientMaze.ClientMaze(map);
 var canvas3d = $('#draw')[0];
 maze.draw3d(canvas3d);
 canvas3d.focus();
