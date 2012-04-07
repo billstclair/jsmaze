@@ -370,6 +370,12 @@ var jsClientMaze = {};
             return map;
         }
 
+        // If true, show spines even if no walls there.
+        // Looks wrong when there is no spine, but in
+        // a wide-open maze, you get lots of white space
+        // that doesn't really belong there.
+        self.showSpines = true;
+
         self.draw3d = draw3d;
         function draw3d(canvas, pos, dir) {
             initPos();
@@ -455,7 +461,8 @@ var jsClientMaze = {};
                     lastWallLeft = true;
                 } else {
                     // Draw left door
-                    if (lastWallLeft ||
+                    if (self.showSpines ||
+                        lastWallLeft ||
                         ((di ?
                           vert[di>0 ? j-1 : j+1][di>0 ? i : i+1] :
                           horiz[dj>0 ? j : j+1][dj>0 ? i+1 : i-1]))) {
@@ -477,7 +484,8 @@ var jsClientMaze = {};
                     lastWallRight = true;
                 } else {
                     // Draw right door
-                    if (lastWallRight ||
+                    if (self.showSpines ||
+                        lastWallRight ||
                         ((di ?
                           vert[di>0 ? j+1 : j-1][di>0 ? i : i+1] :
                           horiz[dj>0 ? j : j+1][dj>0 ? i-1 : i+1]))) {

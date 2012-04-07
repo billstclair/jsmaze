@@ -3,6 +3,12 @@
   <script src='jquery.min.js'></script>
   <script src='server/shared/jsmaze.js'></script>
   <script src='jsClientMaze.js'></script>
+  <script>
+function setSpines(checkbox) {
+  maze.showSpines = ($(checkbox).attr('checked')=='checked');
+  maze.draw3d();
+}
+  </script>
   <title>jsMaze</title>
   <meta name='viewport' content='width=720'/>
 </head>
@@ -20,6 +26,9 @@
         <td>
           <center>
             <canvas id='topview' width='300' height='300'></canvas>
+            <p><input type='checkbox' checked='checked'
+                      onClick='setSpines(this)'/>
+               Show Spines</p>
             <h2>jsMaze</h2>
             <p>To control with keyboard, click on 3d (upper) view.<br/>
               Controls: WASD, IJKL, arrow keys.<br>
