@@ -434,8 +434,8 @@ var jsClientMaze = {};
             var lastyLeft = null;
             var lastxRight = null;
             var lastyRight = null;
-            var lastWallLeft = false;
-            var lastWallRight = false;
+            var lastWallLeft = true;
+            var lastWallRight = true;
 
             // Loop
             for (s=1; s<maxsteps; s++) {
@@ -455,10 +455,15 @@ var jsClientMaze = {};
                     lastWallLeft = true;
                 } else {
                     // Draw left door
-                    drawNewWallLeft(
-                        ctx, x, y, lastWallLeft?null:lastxLeft, left, top, width, height);
-                    lastxLeft = x;
-                    lastyLeft = y;
+                    if (lastWallLeft ||
+                        ((di ?
+                          vert[di>0 ? j-1 : j+1][di>0 ? i : i+1] :
+                          horiz[dj>0 ? j : j+1][dj>0 ? i+1 : i-1]))) {
+                        drawNewWallLeft(
+                            ctx, x, y, lastWallLeft?null:lastxLeft, left, top, width, height);
+                        lastxLeft = x;
+                        lastyLeft = y;
+                    }
                     lastWallLeft = false;
                 }
                 if (di ? horiz[di>0 ? j+1 : j][i] : vert[j][dj>0 ? i : i+1]) {
@@ -472,10 +477,15 @@ var jsClientMaze = {};
                     lastWallRight = true;
                 } else {
                     // Draw right door
-                    drawNewWallRight(
-                        ctx, x, y, lastWallRight?null:lastxRight, left, top, width, height);
-                    lastxRight = x;
-                    lastyRight = y;
+                    if (lastWallRight ||
+                        ((di ?
+                          vert[di>0 ? j+1 : j-1][di>0 ? i : i+1] :
+                          horiz[dj>0 ? j : j+1][dj>0 ? i-1 : i+1]))) {
+                        drawNewWallRight(
+                            ctx, x, y, lastWallRight?null:lastxRight, left, top, width, height);
+                        lastxRight = x;
+                        lastyRight = y;
+                    }
                     lastWallRight = false;
                 }
 

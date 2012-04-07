@@ -10,10 +10,12 @@
 
 //
 // This file will work in the browser or in node.js.
-// In the browser, just put a path to it in a <script> tag.
+// In the browser, just put a path to it in a <script> tag:
+//     <script src='server/shared/jsmaze.js'></script>
 // In node.js:
-//    var jsmaze = require('server/shared/jsmaze.js')
-// In browser, sets the jsmaze global variable.
+//    var jsmaze = require('./server/shared/jsmaze.js');
+// In browser, sets the jsmaze global variable
+//   (and the exports global variable).
 //
 // Global properties/functions:
 //
@@ -110,7 +112,7 @@ if (typeof exports === 'undefined') {
                 for (var j=0; j<row.length; j++) {
                     resrow[j] = row[j];
                 }
-                res[i] = row;
+                res[i] = resrow;
             }
             return res;
         }
