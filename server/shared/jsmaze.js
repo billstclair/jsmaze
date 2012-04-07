@@ -102,34 +102,6 @@ if (typeof exports === 'undefined') {
             self.vert = vert;
         }
 
-        exports.makeMaze = makeMaze;
-        function makeMaze(width, height, val) {
-            val = val ? 1 : 0;
-            if (!height) height = width;
-            var maze = new Maze();
-            maze.width = width;
-            maze.height = height;
-            var horiz = new Array();
-            var vert = new Array();
-            var idx = 0;
-            for (var j=0; j<=height; j++) {
-                var dov = (j < height);
-                var ha = new Array();
-                var va = dov ? new Array() : null;
-                for (var i=0; i<width; i++) {
-                    ha[i] = val;
-                    if (dov) va[i] = val;
-                }
-                if (dov) va[width] = val;
-                horiz[idx] = ha;
-                if (dov) vert[idx] = va;
-                idx++;
-            }
-            maze.horiz = horiz;
-            maze.vert = vert;
-            return maze;
-        }
-
         function copy2d(arr) {
             var res = new Array();
             for (var i=0; i<arr.length; i++) {
@@ -165,5 +137,33 @@ if (typeof exports === 'undefined') {
         function canMoveBackward(pos, dir) {
             return canMoveForward(pos, {i:-dir.i, j:-dir.j});
         }
+    }
+
+    exports.makeMaze = makeMaze;
+    function makeMaze(width, height, val) {
+        val = val ? 1 : 0;
+        if (!height) height = width;
+        var maze = new Maze();
+        maze.width = width;
+        maze.height = height;
+        var horiz = new Array();
+        var vert = new Array();
+        var idx = 0;
+        for (var j=0; j<=height; j++) {
+            var dov = (j < height);
+            var ha = new Array();
+            var va = dov ? new Array() : null;
+            for (var i=0; i<width; i++) {
+                ha[i] = val;
+                if (dov) va[i] = val;
+            }
+            if (dov) va[width] = val;
+            horiz[idx] = ha;
+            if (dov) vert[idx] = va;
+            idx++;
+        }
+        maze.horiz = horiz;
+        maze.vert = vert;
+        return maze;
     }
 })();                           // execute the function() at the top of the file

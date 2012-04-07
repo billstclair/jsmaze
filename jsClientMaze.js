@@ -93,6 +93,21 @@ var jsClientMaze = {};
 //
 
 (function() {
+    // Values for draw3d() direction arg
+    jsClientMaze.UP = {i:0, j:-1};
+    jsClientMaze.DOWN = {i:0, j:1};
+    jsClientMaze.RIGHT = {i:1, j:0};
+    jsClientMaze.LEFT = {i:-1, j:0};
+
+    var round = Math.round;
+    var abs = Math.abs;
+    var floor = Math.floor;
+
+    var alertp = false;
+    function maybeAlert(msg) {
+        if (alertp) alert(msg);
+    }
+
     jsClientMaze.ClientMaze = ClientMaze;
     function ClientMaze(mapOrMaze) {
         var self = this;
@@ -163,12 +178,12 @@ var jsClientMaze = {};
 
             // Draw horizontal lines
             for (var j=0; j<=maze.height; j++) {
-                var y = Math.round(j*height/maze.height);
+                var y = round(j*height/maze.height);
                 var pendown = false
                 var row = horiz[j];
                 var lastx = 0;
                 for (var i=0; i<maze.width; i++) {
-                    var x = Math.round((i+1)*width/maze.width);
+                    var x = round((i+1)*width/maze.width);
                     if (row[i]) {
                         if (!pendown) {
                             ctx.moveTo(left+lastx, top+y);
@@ -187,11 +202,11 @@ var jsClientMaze = {};
 
             // Draw vertical lines
             for (i=0; i<=maze.width; i++) {
-                var x = Math.round(i*width/maze.width);
+                var x = round(i*width/maze.width);
                 var pendown = false
                 var lasty = 0;
                 for (var j=0; j<maze.height; j++) {
-                    var y = Math.round((j+1)*height/maze.height);
+                    var y = round((j+1)*height/maze.height);
                     if (vert[j][i]) {
                         if (!pendown) {
                             ctx.moveTo(left+x, top+lasty);
@@ -269,38 +284,6 @@ var jsClientMaze = {};
         // For debugging
         self.lastEvent = null;
 
-        // Necessary for browser compatibility
-        // http://www.quirksmode.org/js/events_properties.html
-        jsClientMaze.eventPos = eventPos;
-        function eventPos(event) {
-            var posx = 0;
-            var posy = 0;
-            if (!event) event = window.event;
-            self.lastEvent = event;
-
-            var touches = event.targetTouches;
-            if (touches) {
-                // iphone startTouch event
-                if (touches.length != 1) return null;
-                posx = touches[0].pageX;
-                posy = touches[0].pageY;
-            } else if (event.pageX || event.pageY) 	{
-	        posx = event.pageX;
-	        posy = event.pageY;
-            }
-            else if (event.clientX || event.clientY) 	{
-	        posx = event.clientX + document.body.scrollLeft
-	            + document.documentElement.scrollLeft;
-	        posy = event.clientY + document.body.scrollTop
-	            + document.documentElement.scrollTop;
-            }
-            return {x:posx, y:posy};
-        }
-
-        function rem0(x, y) {
-            return (y==0) ? x : x%y;
-        }
-
         self.edit = edit;
         function edit(canvas) {
             if (self.editListener) editEdit();
@@ -338,21 +321,21 @@ var jsClientMaze = {};
 
             var i = (x * maze.width / canvas.width);
             var j = (y * maze.height / canvas.height);
-            var diffi = Math.abs(rem0(i, Math.floor(i)) - 0.5);
-            var diffj = Math.abs(rem0(j, Math.floor(j)) - 0.5);
+            var diffi = abs(rem0(i, floor(i)) - 0.5);
+            var diffj = abs(rem0(j, floor(j)) - 0.5);
             if (diffj < diffi) {
                 // It's a vertical line
                 vert = maze.vert;
-                i = Math.round(i);
-                j = Math.floor(j);
+                i = round(i);
+                j = floor(j);
                 if (i<=0 || i>=maze.width || j<0 || j>=maze.height) return;
                 
                 vert[j][i] = vert[j][i] ? 0 : 1;
             } else {
                 // It's a horizontal line
                 horiz = maze.horiz;
-                i = Math.floor(i);
-                j = Math.round(j);
+                i = floor(i);
+                j = round(j);
                 if (i<0 || i>=maze.height || j<=0 || j>=maze.height) return;
                 horiz[j][i] = horiz[j][i] ? 0 : 1;
             }
@@ -385,19 +368,6 @@ var jsClientMaze = {};
                 if (dov) map[idx++] = vs;
             }
             return map;
-        }
-
-        // Values for draw3d() direction arg
-        jsClientMaze.UP = {i:0, j:-1};
-        jsClientMaze.DOWN = {i:0, j:1};
-        jsClientMaze.RIGHT = {i:1, j:0};
-        jsClientMaze.LEFT = {i:-1, j:0};
-
-        var round = Math.round;
-
-        var alertp = false;
-        function maybeAlert(msg) {
-            if (alertp) alert(msg);
         }
 
         self.draw3d = draw3d;
@@ -776,6 +746,37 @@ var jsClientMaze = {};
             draw3d();
             topdrawpos();
         }
+    }
 
+    // Necessary for browser compatibility
+    // http://www.quirksmode.org/js/events_properties.html
+    jsClientMaze.eventPos = eventPos;
+    function eventPos(event) {
+        var posx = 0;
+        var posy = 0;
+        if (!event) event = window.event;
+        self.lastEvent = event;
+
+        var touches = event.targetTouches;
+        if (touches) {
+            // iphone startTouch event
+            if (touches.length != 1) return null;
+            posx = touches[0].pageX;
+            posy = touches[0].pageY;
+        } else if (event.pageX || event.pageY) 	{
+	    posx = event.pageX;
+	    posy = event.pageY;
+        }
+        else if (event.clientX || event.clientY) 	{
+	    posx = event.clientX + document.body.scrollLeft
+	        + document.documentElement.scrollLeft;
+	    posy = event.clientY + document.body.scrollTop
+	        + document.documentElement.scrollTop;
+        }
+        return {x:posx, y:posy};
+    }
+
+    function rem0(x, y) {
+        return (y==0) ? x : x%y;
     }
 })();                           // execute the function() at the top of the file
