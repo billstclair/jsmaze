@@ -1,10 +1,14 @@
-http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
-  Giving a canvas the focus
-
-The Locker Project - http://lockerproject.org/
 node.js package manager - http://npmjs.org/
+  curl http://npmjs.org/install.sh | sh
+https://github.com/rjrodger/simpledb
+  npm install simpledb
+http://www.mongodb.org/
+  http://mongoosejs.com/
+The Locker Project - http://lockerproject.org/
 peer-to-peer networking - http://telehash.org/
 
+http://www.dbp-consulting.com/tutorials/canvas/CanvasKeyEvents.html
+  Giving a canvas the focus
 
 // From http://www.javascriptkit.com/javatutors/loadjavascriptcss.shtml
 function loadjscssfile(filename, filetype){
