@@ -2,6 +2,28 @@ node.js package manager - http://npmjs.org/
   curl http://npmjs.org/install.sh | sh
 https://github.com/rjrodger/simpledb
   npm install simpledb
+http://coreh.github.com/nide/
+  sudo npm install -g nide
+  cd /path/to/project/dir
+  nide init
+
+----------------------------------------------------------------------
+
+Amazon EC2 info
+
+http://cuppster.com/2011/05/12/diy-node-js-server-on-amazon-ec2/
+<quote>
+get some really good node packages :)
+   $ cd ~
+   $ npm install connect redis connect-redis jade express express-resource futures emailjs
+</quote>
+
+futures and emailjs look interesting.
+redis may be a better choice than simpledb for storing data.
+
+
+----------------------------------------------------------------------
+
 http://www.mongodb.org/
   http://mongoosejs.com/
 The Locker Project - http://lockerproject.org/

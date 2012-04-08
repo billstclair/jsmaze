@@ -57,11 +57,12 @@
 
 if (typeof exports === 'undefined') {
     var jsmaze = {};
-    var exports = jsmaze;
+} else {
+    var jsmaze = exports;
 }
 
 (function() {
-    exports.Maze = Maze;
+    jsmaze.Maze = Maze;
     function Maze(map) {
         var self = this;
         if (map) init(map);
@@ -141,7 +142,7 @@ if (typeof exports === 'undefined') {
         }
     }
 
-    exports.makeMaze = makeMaze;
+    jsmaze.makeMaze = makeMaze;
     function makeMaze(width, height, val) {
         val = val ? 1 : 0;
         if (!height) height = width;
@@ -168,4 +169,4 @@ if (typeof exports === 'undefined') {
         maze.vert = vert;
         return maze;
     }
-})();                           // execute the function() at the top of the file
+})();                 // execute the function() at the top of the file
