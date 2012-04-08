@@ -1,0 +1,10 @@
+{
+  "name": "jsMaze",
+  "description": "A multi-user maze playspace",
+  "version": "0.1.0",
+  "author": "Bill St. Clair",
+  "dependencies": {
+    "simpledb": "0.0.8"
+  },
+  "devDependencies": {}
+}
