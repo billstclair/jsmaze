@@ -46,33 +46,59 @@ function DB() {
         }
     }
 
+    function key(type, name) {
+        return 'jmaze:' + type + ':' + name;
+    }
+
+    function userkey(login) {
+        return key('user', login);
+    }
+
+    function userskey() {
+        return key('users');
+    }
+
     self.createAccount = function(login, password, callback) {
         requireCallback(callback);
-        var key = 'user:'+login;
-        _client.type(key, function(err,res) {
-            if (err) callback(err);
-            else if (!(res === 'none')) {
-                callback('An account already exists for: ' + login);
-            } else {
+        var usersk = userskey();
+        var userk = userkey(login);
+        _client.sismember(usersk, login, cb(callback, function(res) {
+            if (res) callback('An account already exists for: ' + login);
+            else {
                 var hash = sha256(password);
-                _client.hset(key, 'passwordHash', hash, callback);
+                _client.multi()
+                    .sadd(usersk, login)
+                    .hset(userk, 'passwordHash', hash)
+                    .exec(function(err) {
+                        callback(err);
+                    });
             }
-        });
+        }));
+    }
+
+    self.users = function(callback) {
+        requireCallback(callback);
+        _client.smembers(userskey(),callback);
     }
 
     self.deleteAccount = function(login, callback) {
         requireCallback(callback);
-        _client.del('user:'+login, callback);
+        _client.multi()
+            .del(userkey(login))
+            .srem(userskey(), login)
+            .exec(function (err) {
+                callback(err);
+            });
     }
 
     self.login = function(login, password, callback) {
         requireCallback(callback);
-        _client.hget('user:'+login, 'passwordHash', function(error, res) {
+        _client.hget(userkey(login), 'passwordHash', function(error, res) {
             // Won't need hash if no db entry, but don't allow
             // telling that from timing.
             var hash = sha256(password);
             if (!(hash===res)) error = true;
-            var errmsg = 'Error: Incorrect login or password';
+            var errmsg = 'Incorrect login or password';
             callback(error ? errmsg : null)
         });
     }

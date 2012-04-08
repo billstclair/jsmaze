@@ -21,6 +21,9 @@ get some really good node packages :)
 futures and emailjs look interesting.
 redis may be a better choice than simpledb for storing data.
 
+http://socket.io/
+  npm install socket.io
+  Cool client and server sockets
 
 ----------------------------------------------------------------------
 
