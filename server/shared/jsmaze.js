@@ -56,117 +56,148 @@
 //
 
 if (typeof exports === 'undefined') {
-    var jsmaze = {};
+  var jsmaze = {};
 } else {
-    var jsmaze = exports;
+  var jsmaze = exports;
 }
 
 (function() {
-    jsmaze.Maze = Maze;
-    function Maze(map) {
-        var self = this;
-        if (map) init(map);
+  jsmaze.Maze = Maze;
+  function Maze(map) {
+    var self = this;
+    if (map) init(map);
 
-        function init (map) {
-            if (map.length % 2 != 1) {
-                throw('map must be an odd-length array of strings');
-            }
-            var horiz = new Array();
-            var vert = new Array();
-            var w = map[0].length;
-            var h = (map.length-1)/2;
-            var idx = 0;
-            for (var j=0; j<map.length; j+=2) {
-                var hs = map[j];
-                var vs = map[j+1]
-                var dov = ((j+1) != map.length);
-                if (typeof(hs)!='string' || (dov && typeof(vs)!='string')) {
-                    throw 'map must be an array of strings';
-                }
-                if (hs.length!=w || (dov && vs.length!=(w+1))) {
-                    throw 'map has inconsistent element length';
-                }
-                var ha = new Array();
-                var va = new Array();
-                for (var i=0; i<w; i++) {
-                    ha[i] = (hs[i]==' ') ? 0 : 1;
-                    if (dov) va[i] = (vs[i]==' ') ? 0 : 1;
-                }
-                if (dov) {
-                    va[w] = (vs[w]==' ') ? 0 : 1;
-                    vert[idx] = va;
-                }
-                horiz[idx] = ha;
-                idx++;
-            }
-            self.width = w;
-            self.height = h;
-            self.horiz = horiz;
-            self.vert = vert;
+    function init (map) {
+      if (map.length % 2 != 1) {
+        throw('map must be an odd-length array of strings');
+      }
+      var horiz = new Array();
+      var vert = new Array();
+      var w = map[0].length;
+      var h = (map.length-1)/2;
+      var idx = 0;
+      for (var j=0; j<map.length; j+=2) {
+        var hs = map[j];
+        var vs = map[j+1]
+        var dov = ((j+1) != map.length);
+        if (typeof(hs)!='string' || (dov && typeof(vs)!='string')) {
+          throw 'map must be an array of strings';
         }
-
-        function copy2d(arr) {
-            var res = new Array();
-            for (var i=0; i<arr.length; i++) {
-                row = arr[i];
-                var resrow = new Array();
-                for (var j=0; j<row.length; j++) {
-                    resrow[j] = row[j];
-                }
-                res[i] = resrow;
-            }
-            return res;
+        if (hs.length!=w || (dov && vs.length!=(w+1))) {
+          throw 'map has inconsistent element length';
         }
-
-        self.clone = clone;
-        function clone() {
-            var maze = new Maze();
-            maze.width = self.width;
-            maze.height = self.height;
-            maze.horiz = copy2d(self.horiz);
-            maze.vert = copy2d(self.vert);
-            return maze;
+        var ha = new Array();
+        var va = new Array();
+        for (var i=0; i<w; i++) {
+          ha[i] = (hs[i]==' ') ? 0 : 1;
+          if (dov) va[i] = (vs[i]==' ') ? 0 : 1;
         }
-
-        self.canMoveForward = canMoveForward;
-        function canMoveForward(pos, dir) {
-            var i = pos.i;
-            var j = pos.j
-            return dir.i ? !self.vert[j][(dir.i>0) ? i+1 : i] :
-                           !self.horiz[(dir.j>0) ? j+1 : j][i];
+        if (dov) {
+          va[w] = (vs[w]==' ') ? 0 : 1;
+          vert[idx] = va;
         }
-
-        self.canMoveBackward = canMoveBackward;
-        function canMoveBackward(pos, dir) {
-            return canMoveForward(pos, {i:-dir.i, j:-dir.j});
-        }
+        horiz[idx] = ha;
+        idx++;
+      }
+      self.width = w;
+      self.height = h;
+      self.horiz = horiz;
+      self.vert = vert;
     }
 
-    jsmaze.makeMaze = makeMaze;
-    function makeMaze(width, height, val) {
-        val = val ? 1 : 0;
-        if (!height) height = width;
-        var maze = new Maze();
-        maze.width = width;
-        maze.height = height;
-        var horiz = new Array();
-        var vert = new Array();
-        var idx = 0;
-        for (var j=0; j<=height; j++) {
-            var dov = (j < height);
-            var ha = new Array();
-            var va = dov ? new Array() : null;
-            for (var i=0; i<width; i++) {
-                ha[i] = val;
-                if (dov) va[i] = val;
-            }
-            if (dov) va[width] = val;
-            horiz[idx] = ha;
-            if (dov) vert[idx] = va;
-            idx++;
+    function copy2d(arr) {
+      var res = new Array();
+      for (var i=0; i<arr.length; i++) {
+        row = arr[i];
+        var resrow = new Array();
+        for (var j=0; j<row.length; j++) {
+          resrow[j] = row[j];
         }
-        maze.horiz = horiz;
-        maze.vert = vert;
-        return maze;
+        res[i] = resrow;
+      }
+      return res;
     }
+
+    self.clone = clone;
+    function clone() {
+      var maze = new Maze();
+      maze.width = self.width;
+      maze.height = self.height;
+      maze.horiz = copy2d(self.horiz);
+      maze.vert = copy2d(self.vert);
+      return maze;
+    }
+
+    self.canMoveForward = canMoveForward;
+    function canMoveForward(pos, dir) {
+      var i = pos.i;
+      var j = pos.j
+      return dir.i ? !self.vert[j][(dir.i>0) ? i+1 : i] :
+      !self.horiz[(dir.j>0) ? j+1 : j][i];
+    }
+
+    self.canMoveBackward = canMoveBackward;
+    function canMoveBackward(pos, dir) {
+      return canMoveForward(pos, {i:-dir.i, j:-dir.j});
+    }
+  }
+
+  jsmaze.makeMaze = makeMaze;
+  function makeMaze(width, height, val) {
+    val = val ? 1 : 0;
+    if (!height) height = width;
+    var maze = new Maze();
+    maze.width = width;
+    maze.height = height;
+    var horiz = new Array();
+    var vert = new Array();
+    var idx = 0;
+    for (var j=0; j<=height; j++) {
+      var dov = (j < height);
+      var ha = new Array();
+      var va = dov ? new Array() : null;
+      for (var i=0; i<width; i++) {
+        ha[i] = val;
+        if (dov) va[i] = val;
+      }
+      if (dov) va[width] = val;
+      horiz[idx] = ha;
+      if (dov) vert[idx] = va;
+      idx++;
+    }
+    maze.horiz = horiz;
+    maze.vert = vert;
+    return maze;
+  }
+
+  var DEFAULT_MAP = ["----------",
+                     "||      | |",
+                     "  ------- ",
+                     "| |    | ||",
+                     "   -----  ",
+                     "|| |  | |||",
+                     "    ---   ",
+                     "||| |  ||||",
+                     "     -    ",
+                     "||||  | |||",
+                     "    --    ",
+                     "||||   | ||",
+                     "   ----   ",
+                     "||| |   | |",
+                     "  ------  ",
+                     "|| |     ||",
+                     " -------- ",
+                     "| |       |",
+                     "----------"];
+
+  jsmaze.getDefaultMap = getDefaultMap;
+  function getDefaultMap() {
+    return DEFAULT_MAP;
+  }
+
+  jsmaze.makeDefaultMaze = makeDefaultMaze;
+  function makeDefaultMaze() {
+    return makeMaze(DEFAULT_MAP);
+  }
+
 })();                 // execute the function() at the top of the file

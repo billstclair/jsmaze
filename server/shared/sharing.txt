@@ -1,0 +1,78 @@
+Sharing code between node.js and the browser.
+
+I've started using <a href="http://nodejs.org/">node.js</a> for the
+server for my new <a href="http://jsmaze.com/">jsMaze</a>
+project. Some of the code will need to run both in the browser and on
+the server. This article explains how I've decided to do that.
+
+node.js has a nice module system to keep your code's private parts
+separate from the rest of the system. JavaScript in the browser has no
+such built-in mechanism. node.js allows you to export objects and
+functions from your module by adding them to the
+<code>module.exports</code> object. JavaScript in the browser has no
+such built-in mechanism.
+
+My first shared file is the very beginnings of my Maze class. You can
+view it <a
+href="https://github.com/billstclair/jsmaze/blob/master/server/shared/jsmaze.js">here</a>.
+The code begins with a little section to make the browser environment
+similar to the node.js module environment:
+
+<pre>
+if (typeof exports === 'undefined') {
+    var jsmaze = {};
+} else {
+    var jsmaze = exports;
+}
+</pre>
+
+The <code>exports</code> variable is initialized at module load time
+by node.js to <code>{}</code>, an empty object. This module will
+loaded into node.js with something similar to:
+
+<pre>
+var jsmaze = require('../shared/jsmaze.js');
+</pre>
+
+That sets the <code>jsmaze</code> variable in the calling environment
+to the exported value of <code>exports</code> in the code. The browser
+has only a global environment and the lexical environments of
+functions, so the code above creates a global variable
+<code>jsmaze</code> in the browser; in node.js, it creates a
+<i>local</i> variable <code>jsmaze</code>, initialized to the
+<code>exports</code> object. That allows the code below to set
+properties in <code>jsmaze</code> in both environments.
+
+The rest of the code is inside one big function, to protect the global
+environment from any variables settings. This is not necessary in
+node.js, since its module system provides that protection for you, but
+in the browser, it ensures that the only change the file makes to the
+global environment is the one global symbol, in this case
+<code>jsmaze</code>.
+
+<pre>
+(function() {
+    jsmaze.Maze = Maze;
+    function Maze(map) {
+        var self = this;
+        if (map) init(map);
+
+        function init (map) {
+          ...
+        }
+        ...
+        self.clone = clone;
+        function clone() {
+            var maze = new Maze();
+            ...
+        }
+    }
+
+    jsmaze.makeMaze = makeMaze;
+    function makeMaze(width, height, val) {
+        ...
+        var maze = new Maze();
+        ...
+    }
+})();                 // execute the function() at the top of the file
+</pre>
