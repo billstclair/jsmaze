@@ -85,8 +85,8 @@ var jsClientMaze = {};
 //    Set the current values if they are included.
 //  keyevent
 //    The last key event processed by the threeDCanvas()
-//  goForward()
-//  goBack()
+//  moveForward()
+//  moveBack()
 //  turnRight()
 //  turnLeft()
 //    Move or turn the "eye" for the threeDView()
@@ -148,7 +148,7 @@ var jsClientMaze = {};
     self.threeDCanvas = threeDCanvas;
     pThreeDCanvas = null;
     function threeDCanvas(canvas) {
-      if (canvas == undefined) {
+      if (canvas === undefined) {
         return pThreeDCanvas;
       }
       pThreeDCanvas = canvas;
@@ -156,6 +156,8 @@ var jsClientMaze = {};
         initPos();
         addKeyListener(canvas);
         draw3d();
+      } else {
+        removeKeyListener();
       }
       return canvas;
     }
@@ -286,7 +288,7 @@ var jsClientMaze = {};
 
     self.edit = edit;
     function edit(canvas) {
-      if (self.editListener) editEdit();
+      if (self.editListener) endEdit();
       if (canvas === undefined) canvas = topViewCanvas();
       if (!canvas) return;
 
@@ -379,14 +381,15 @@ var jsClientMaze = {};
     self.draw3d = draw3d;
     function draw3d(canvas, pos, dir) {
       initPos();
-      if (canvas == undefined) {
+      if (!canvas) {
         canvas = threeDCanvas();
       } else {
         threeDCanvas(canvas);
+        return;
       }
-      if (pos == undefined) pos = self.pos;
+      if (pos === undefined) pos = self.pos;
       else self.pos = pos;
-      if (dir == undefined) dir = self.dir;
+      if (dir === undefined) dir = self.dir;
       else self.dir = dir;
       
       if (!canvas) return;
@@ -654,15 +657,15 @@ var jsClientMaze = {};
 
     function removeKeyListener() {
       var listener = self.keyListener;
-      if (listener && listener!=undefined) {
+      if (listener) {
         var canvas = self.keyListenerCanvas;
         self.keyListener = null;
         self.keyListenerCanvas = null;
         canvas.removeEventListener('keydown', listener, false);
         listener = self.keyTouchListener;
         self.keyTouchListener = null;
-        canvas.removeEventListener('touchStart', listener, false);
-        canvas.removeEventListener('touchEnd', listener, false);
+        canvas.removeEventListener('touchstart', listener, false);
+        canvas.removeEventListener('touchend', listener, false);
       }
     }
 
@@ -680,8 +683,8 @@ var jsClientMaze = {};
       w4 = canvas.width / 3;
       h4 = canvas.height / 3;
       var action = null;
-      if (y < h4) action = goForward;
-      else if (y > canvas.height-h4) action = goBack;
+      if (y < h4) action = moveForward;
+      else if (y > canvas.height-h4) action = moveBack;
       else if (x <= w4) action = turnLeft;
       else if (x >= canvas.width-w4) action = turnRight;
       var timeOut = 100;
@@ -708,8 +711,8 @@ var jsClientMaze = {};
       if (key == undefined) key = event.keyCode;
       var nodefault = true;
       // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
-      if (key==87 || key==73 || key==38) goForward(); // WI^
-      else if (key==83 || key==75 || key==40) goBack(); // SKv
+      if (key==87 || key==73 || key==38) moveForward(); // WI^
+      else if (key==83 || key==75 || key==40) moveBack(); // SKv
       else if (key==65 || key==74 || key==37) turnLeft(); // AJ<
       else if (key==68 || key==76 || key==39) turnRight(); // DL>
       else nodefault = false;
@@ -727,26 +730,36 @@ var jsClientMaze = {};
       }
     }
 
-    self.goForward = goForward;
-    function goForward() {
+    var _proxy = null;
+    self.serverProxy = serverProxy;
+    function serverProxy(proxy) {
+      if (proxy === undefined) return _proxy;
+      _proxy = proxy;
+    }
+
+    self.moveForward = moveForward;
+    function moveForward() {
       var pos = self.pos;
       var dir = self.dir;
       if (maze.canMoveForward(pos, dir)) {
+        if (_proxy) return _proxy.moveForward();
         move(pos.i + dir.i, pos.j + dir.j);
       }
     }
 
-    self.goBack = goBack;
-    function goBack() {
+    self.moveBack = moveBack;
+    function moveBack() {
       var pos = self.pos;
       var dir = self.dir;
       if (maze.canMoveBackward(pos, dir)) {
+        if (_proxy) return _proxy.moveBack();
         move(pos.i - dir.i, pos.j - dir.j);
       }
     }
 
     self.turnRight = turnRight;
     function turnRight() {
+      if (_proxy) return _proxy.turnRight();
       topdrawpos(true);
       di = self.dir.i;
       self.dir.i = -self.dir.j;
@@ -757,6 +770,7 @@ var jsClientMaze = {};
 
     self.turnLeft = turnLeft;
     function turnLeft() {
+      if (_proxy) return _proxy.turnLeft();
       topdrawpos(true);
       di = self.dir.i;
       self.dir.i = self.dir.j;

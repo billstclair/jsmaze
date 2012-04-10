@@ -1,18 +1,79 @@
 <html>
 <head>
   <script src='js/jquery.min.js'></script>
+  <script src='js/socket.io.min.js'></script>
   <script src='server/shared/jsmaze.js'></script>
+  <script src='server/shared/evalFactory.js'></script>
   <script src='js/jsClientMaze.js'></script>
+  <script src='js/client.js'></script>
   <script>
+
 function setSpines(checkbox) {
   maze.showSpines = ($(checkbox).attr('checked')=='checked');
   maze.draw3d();
+}
+
+var maze;
+var canvas3d;
+var canvas;
+
+function connect(button) {
+  var label = $(button).val();
+  if (label == 'Connect') {
+    maze.endEdit();
+    maze.threeDCanvas(null);
+    try {
+      client.connect('http://localhost:6293/', canvas3d, canvas);
+      canvas3d.focus();
+      $(button).val('Disconnect');
+    } catch(err) {
+      alert('Error connecting with server: ' + err);
+      localSetup(true);
+    }
+  } else {
+    try {
+      client.disconnect();
+    } catch(err) {
+    }
+    $(button).val('Connect');
+    localSetup(true);
+  }
+}
+
+function localSetup(keepmaze) {
+// Alternating horizontal and vertical wals
+  var map = ["----------",
+             "||      | |",
+             "  ------- ",
+             "| |    | ||",
+             "   -----  ",
+             "|| |  | |||",
+             "    ---   ",
+             "||| |  ||||",
+             "     -    ",
+             "||||  | |||",
+             "    --    ",
+             "||||   | ||",
+             "   ----   ",
+             "||| |   | |",
+             "  ------  ",
+             "|| |     ||",
+             " -------- ",
+             "| |       |",
+             "----------"]
+
+  if (!keepmaze || !maze) maze = new jsClientMaze.ClientMaze(map);
+  canvas3d = $('#draw')[0];
+  canvas = $('#topview')[0];
+  maze.draw3d(canvas3d);
+  maze.edit(canvas);
+  canvas3d.focus();
 }
   </script>
   <title>jsMaze</title>
   <meta name='viewport' content='width=720'/>
 </head>
-<body>
+<body onload='localSetup()'>
   <center>
     <table>
       <tr>
@@ -26,9 +87,13 @@ function setSpines(checkbox) {
         <td>
           <center>
             <canvas id='topview' width='300' height='300'></canvas>
-            <p><input type='checkbox' checked='checked'
+            <p>
+              <input type='submit' id='connectButton' value='Connect'
+                     onClick='connect(this)'/>
+              <input type='checkbox' checked='checked'
                       onClick='setSpines(this)'/>
-               Show Spines</p>
+               Show Spines
+            </p>
             <h2>jsMaze</h2>
             <p>To control with keyboard, click on 3d (upper) view.<br/>
               Controls: WASD, IJKL, arrow keys.<br>
@@ -37,44 +102,13 @@ function setSpines(checkbox) {
             Middle section of 3d view can be used for drag, pinch, or
               double tap.<br/>
             To change maze, click to toggle walls on lower view.</p>
-            <p>Code is at <a href='https://github.com/billstclair/jsmaze'>github.com/billstclair/jsmaze</a>.</p>
+            <p>Code is at <a href='https://github.com/billstclair/jsmaze'>github.com/billstclair/jsmaze</a>.<br/>
+            IRC at <a href="irc://irc.freenode.net/#jsMaze">irc.freenode.net/#jsMaze</a></p>
           </center>
         </td>
       </tr>
     </table>
     <p>
   </center>
-  <script>
-
-// Alternating horizontal and vertical wals
-var map = ["----------",
-           "||      | |",
-           "  ------- ",
-           "| |    | ||",
-           "   -----  ",
-           "|| |  | |||",
-           "    ---   ",
-           "||| |  ||||",
-           "     -    ",
-           "||||  | |||",
-           "    --    ",
-           "||||   | ||",
-           "   ----   ",
-           "||| |   | |",
-           "  ------  ",
-           "|| |     ||",
-           " -------- ",
-           "| |       |",
-           "----------"]
-
-var maze = new jsClientMaze.ClientMaze(map);
-var canvas3d = $('#draw')[0];
-maze.draw3d(canvas3d);
-canvas3d.focus();
-
-var canvas = $('#topview')[0];
-maze.edit(canvas);
-
-  </script>
 </body>
 </html>

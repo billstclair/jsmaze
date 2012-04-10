@@ -14,16 +14,22 @@ module.exports = new MazeServer();
 
 function MazeServer() {
   var self = this;
-  var maze = jsmaze.makeDefaultMaze();
+  var map = jsmaze.getDefaultMap();
+  var maze = new jsmaze.Maze(map);
   var sockets = {};
 
   self.getmaze = getmaze;
   function getmaze(socket, args) {
-    var name = args.name || 'Random';
+    var name = (args && args.name) || 'Random';
     sockets[socket] = {name: name,
                        pos: {i:0,j:0},
                        dir: {i:0,j:1}};
-    socket.emit('eval', ['setmaze',{maze: maze}]);
+    socket.emit('eval', ['setMaze',{map: map}]);
+  }
+
+  self.removeSocket = removeSocket;
+  function removeSocket(socket) {
+    sockets[socket] = null;
   }
 
   self.move = move;
@@ -41,11 +47,11 @@ function MazeServer() {
         form = ['moveto',{pos: pos}];
       }
       break;
-    case 'moveBackward':
+    case 'moveBack':
       if (maze.canMoveBackward(pos, dir)) {
         pos.i -= dir.i;
         pos.j -= dir.j;
-        form = ['move',{pos: pos}];
+        form = ['moveto',{pos: pos}];
       }
       break;
     case 'turnRight':

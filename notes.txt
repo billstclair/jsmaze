@@ -7,6 +7,9 @@ http://coreh.github.com/nide/
   cd /path/to/project/dir
   nide init
 
+node debug myscript.js
+  Or signal SIGUSR1 on an existing node process.
+
 ----------------------------------------------------------------------
 
 Amazon EC2 info
@@ -19,11 +22,27 @@ get some really good node packages :)
 </quote>
 
 futures and emailjs look interesting.
-redis may be a better choice than simpledb for storing data.
+
+http://redis.io/
+  Fast NoSQL database
+  npm install redis
+  http://redis.io/topics/persistence
 
 http://socket.io/
-  npm install socket.io
   Cool client and server sockets
+  npm install socket.io
+
+Transforming images:
+  https://developer.mozilla.org/en/CSS/transform
+  http://www.mathamazement.com/Lessons/Pre-Calculus/08_Matrices-and-Determinants/coordinate-transformation-matrices.html
+    y' = 1/3x
+    x' = x
+  http://www.w3schools.com/cssref/css3_pr_transform.asp
+  http://www.script-tutorials.com/cross-browser-image-shaking-effect-using-javascript/
+  http://www.dmxzone.com/go?17445
+
+HTML5 Canvas library
+  http://www.kineticjs.com/
 
 ----------------------------------------------------------------------
 

@@ -11,12 +11,12 @@
 var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 var fs = require('fs');
-var eval = require('../shared/evalFactory').makeEval();
+var evaluator = require('../shared/evalFactory').makeEvaluator();
 var mazeServer = require('./mazeServer');
 
 var defaultPort = 6293;          // MAZE on the telephone dialpad
 
-initEval();
+initEvaluator();
 
 exports.start = function(port) {
   if (!port) port = defaultPort;
@@ -28,9 +28,11 @@ exports.stop = function() {
 }
 
 io.sockets.on('connection', function (socket) {
-  mazeServer.registerSocket(socket);
   socket.on('eval', function (data) {
-    eval.eval(socket, data, console.log);
+    evaluator.evaluate(socket, data, console.log);
+  });
+  socket.on('disconnect', function() {
+    mazeServer.removeSocket(socket);
   });
 });
 
@@ -46,11 +48,11 @@ function handler (req, res) {
               });
 }
 
-function initEval() {
-  eval.register('getMaze', mazeServer.getmaze,
-                'moveForward', mazeServer.move,
-                'moveBack', mazeServer.move,
-                'turnLeft', mazeServer.move,
-                'turnRight', mazeServer.move);
+function initEvaluator() {
+  evaluator.register('getMaze', mazeServer.getmaze,
+                     'moveForward', mazeServer.move,
+                     'moveBack', mazeServer.move,
+                     'turnLeft', mazeServer.move,
+                     'turnRight', mazeServer.move);
 }
 

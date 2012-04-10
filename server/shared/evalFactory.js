@@ -10,49 +10,47 @@
 
 // Works in both node.js and the browser
 if (typeof exports === 'undefined') {
-  var eval = {};
+  var evalFactory = {};
 } else {
-  var eval = exports;
+  var evalFactory = exports;
 }
 
 (function() {
-  eval.makeEval = function() {
-    return new Eval();
+  evalFactory.makeEvaluator = function() {
+    return new Evaluator();
   }
 
-  function Eval() {
+  function Evaluator() {
     self = this;
 
-    var dispatch = {};
+    var dispatchTable = {};
+    this.dispatchTable = dispatchTable;
 
     // Args are alternating name/value pairs
     self.register = function() {
       var len = arguments.length;
-      if (len%2 == 1) throw('Odd number of args to eval.register()');
+      if (len%2 == 1) throw('Odd number of args to evaluator.register()');
       for (var i=0; i<len;) {
-        dispatch[arguments[i++]] = arguments[i++];
+        dispatchTable[arguments[i++]] = arguments[i++];
       }
       return self;
     }
 
     // [function,{name:value,...}]
-    self.eval = function(socket, functionAndArgs, errfun) {
+    self.evaluate = function(socket, functionAndArgs, errfun) {
       try {
         var fun = functionAndArgs[0];
-        var f = dispatch[fun];
+        var args = functionAndArgs[1];
+        console.log('evaluating: ' + fun + ' ' + JSON.stringify(args));
+        var f = dispatchTable[fun];
         if (!f) {
           throw('No registered function: ' + fun);
         }
-        var args = functionAndArgs[1];
         f(socket, args, fun);
       } catch (err) {
         if (typeof(errfun) === 'function') errfun(err);
         else throw(err);
       }
-    }
-
-    self.dispatch = function() {
-      return dispatch;
     }
   }
 })()                            // eval the function() at the top of the file
