@@ -16,59 +16,64 @@ function MazeServer() {
   var self = this;
   var map = jsmaze.getDefaultMap();
   var maze = new jsmaze.Maze(map);
-  var sockets = {};
+  var emitters = {};
 
   self.getmaze = getmaze;
-  function getmaze(socket, args) {
+  function getmaze(emitter, args) {
     var name = (args && args.name) || 'Random';
-    sockets[socket] = {name: name,
+    emitters[emitter] = {name: name,
                        pos: {i:0,j:0},
                        dir: {i:0,j:1}};
-    socket.emit('eval', ['setMaze',{map: map}]);
+    emitter('setMaze',{map: map});
   }
 
-  self.removeSocket = removeSocket;
-  function removeSocket(socket) {
-    sockets[socket] = null;
+  self.removeEmitter = removeEmitter;
+  function removeEmitter(emitter) {
+    emitters[emitter] = null;
   }
 
   self.move = move;
-  function move(socket, args, fun) {
-    var state = sockets[socket];
+  function move(emitter, args, fun) {
+    var state = emitters[emitter];
+    if (!state) return emitter('log',{message: 'No state for emitter.'});
     var pos = state.pos;
     var dir = state.dir;
-    if (!state) socket.emit('eval',['log',{message: 'No state for socket.'}]);
-    var form = null;
+    var outfun = null;
+    var outargs = null;
     switch(fun) {
     case 'moveForward':
       if (maze.canMoveForward(pos, dir)) {
         pos.i += dir.i;
         pos.j += dir.j;
-        form = ['moveto',{pos: pos}];
+        outfun = 'moveto';
+        outargs = {pos: pos};
       }
       break;
     case 'moveBack':
       if (maze.canMoveBackward(pos, dir)) {
         pos.i -= dir.i;
         pos.j -= dir.j;
-        form = ['moveto',{pos: pos}];
+        outfun = 'moveto';
+        outargs = {pos: pos};
       }
       break;
     case 'turnRight':
       var di = dir.i;
       dir.i = -dir.j;
       dir.j = di;
-      form = ['turn',{dir: dir}];
+      outfun = 'turn'
+      outargs = {dir: dir};
       break;
     case 'turnLeft':
       var di = dir.i;
       dir.i = dir.j;
       dir.j = -di;
-      form = ['turn',{dir: dir}];
+      outfun = 'turn'
+      outargs = {dir: dir};
       break;
     }
-    if (form) {
-      socket.emit('eval', form);
+    if (outfun) {
+      emitter(outfun, outargs);
     }
   }
 }

@@ -28,12 +28,23 @@ exports.stop = function() {
   app.close();
 }
 
+function getSocketEmitter(socket) {
+  if (socket.jsMazeEmitter) return socket.jsMazeEmitter;
+  var emitter = function(fun, args) {
+    if (!args) args = null;
+    socket.emit('eval', [fun, args]);
+  }
+  socket.jsMazeEmitter = emitter;
+  return emitter;
+}
+
 io.sockets.on('connection', function (socket) {
+  var emitter = getSocketEmitter(socket)
   socket.on('eval', function (data) {
-    evaluator.evaluate(socket, data, console.log);
+    evaluator.evaluate(emitter, data, console.log);
   });
   socket.on('disconnect', function() {
-    mazeServer.removeSocket(socket);
+    mazeServer.removeEmitter(emitter);
   });
 });
 
