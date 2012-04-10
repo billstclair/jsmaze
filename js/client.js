@@ -75,7 +75,7 @@ function Client() {
     _maze = new jsClientMaze.ClientMaze(map);
     _maze.serverProxy(_proxy);
     _maze.draw3d(_canvas3d);
-    _maze.topdraw();
+    _maze.topdraw(_canvas);
   }
   
   function socketLog(socket, args) {
@@ -83,12 +83,14 @@ function Client() {
   }
 
   function moveto(socket, args) {
+    _maze.topdrawpos(true);
     _maze.pos = args.pos;
     _maze.draw3d();
     _maze.topdrawpos();
   }
 
   function turn(socket, args) {
+    _maze.topdrawpos(true);
     _maze.dir = args.dir;
     _maze.draw3d();
     _maze.topdrawpos();

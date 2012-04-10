@@ -721,7 +721,6 @@ var jsClientMaze = {};
 
     function move(i, j) {
       if (i>=0 && i<maze.width && j>=0 && j<maze.height) {
-        topdrawpos(true);
         self.pos.i = i;
         self.pos.j = j;
         draw3d();

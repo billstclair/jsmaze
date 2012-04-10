@@ -13,6 +13,7 @@ var io = require('socket.io').listen(app);
 var fs = require('fs');
 var evaluator = require('../shared/evalFactory').makeEvaluator();
 var mazeServer = require('./mazeServer');
+var url = require('url');
 
 var defaultPort = 6293;          // MAZE on the telephone dialpad
 
@@ -37,13 +38,17 @@ io.sockets.on('connection', function (socket) {
 });
 
 function handler (req, res) {
-  fs.readFile(__dirname + '/../index.html',
+  var urlpath = url.parse(req.url).pathname;
+  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
+  var filepath = __dirname + '/../..' + urlpath;
+  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
+  fs.readFile(filepath,
               function (err, data) {
-                res.writeHead(200);
                 if (err) {
-                  return res.end('This is a jsMaze server.' +
-                                 'Talk to it with a jsMaze client.');
+                  res.writeHead(500);
+                  return res.end('Page not found');
                 }
+                res.writeHead(200);
                 res.end(data);
               });
 }

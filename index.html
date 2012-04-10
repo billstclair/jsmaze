@@ -23,7 +23,7 @@ function connect(button) {
     maze.endEdit();
     maze.threeDCanvas(null);
     try {
-      client.connect('http://localhost:6293/', canvas3d, canvas);
+      client.connect('/', canvas3d, canvas);
       canvas3d.focus();
       $(button).val('Disconnect');
     } catch(err) {
