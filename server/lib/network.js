@@ -8,7 +8,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-var app = require('express').createServer();
+var express = require('express');
+var app = express.createServer();
 var io = require('socket.io').listen(app);
 var fs = require('fs');
 var evaluator = require('../shared/evalFactory').makeEvaluator();
@@ -23,8 +24,14 @@ exports.start = function(port, uid, gid) {
   if (!port) port = defaultPort;
   console.log('Listening for connections on port: ', port);
   app.listen(port);
-  if (gid != undefined) process.setgid(gid);
-  if (uid != undefined) process.setuid(uid);
+  if (gid != undefined) {
+    console.log('Setting gid to', gid);
+    process.setgid(gid);
+  }
+  if (uid != undefined) {
+    console.log('Setting uid to', uid);
+    process.setuid(uid);
+  }
 }
 
 exports.stop = function() {
@@ -32,12 +39,32 @@ exports.stop = function() {
 }
 
 // Handler for Express
+// From https://github.com/spadin/simple-express-static-server
+//app.get("/", function(req, res) {
+//  res.redirect("/index.html");
+//});
+
 app.get('/', function (req, res) {
   var urlpath = url.parse(req.url).pathname;
   if (urlpath.slice(-1) == '/') urlpath += 'index.html';
-  var filepath = __dirname + '/../..' + urlpath;
-  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
+  var filepath = __dirname.split('/');
+  filepath = filepath.splice(0, filepath.length-2).join('/') + urlpath;
+  console.log('Getting', filepath, ' for URL:', urlpath);
   res.sendfile(filepath);
+});
+
+
+app.configure(function(){
+  app.use(express.methodOverride());
+  app.use(express.bodyParser());
+  var filepath = __dirname.split('/');
+  filepath = filepath.splice(0, filepath.length-2).join('/');
+  app.use(express.static(filepath));
+  app.use(express.errorHandler({
+    dumpExceptions: true,
+    showStack: true
+  }));
+  app.use(app.router);
 });
 
 // Handler for the built-in http class
