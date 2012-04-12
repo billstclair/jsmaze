@@ -132,14 +132,93 @@ if (typeof exports === 'undefined') {
     function canMoveForward(pos, dir) {
       var i = pos.i;
       var j = pos.j
-      return dir.i ? !self.vert[j][(dir.i>0) ? i+1 : i] :
-      !self.horiz[(dir.j>0) ? j+1 : j][i];
+      return dir.i ?
+        !self.vert[j][(dir.i>0) ? i+1 : i] :
+        !self.horiz[(dir.j>0) ? j+1 : j][i];
     }
 
     self.canMoveBackward = canMoveBackward;
     function canMoveBackward(pos, dir) {
       return canMoveForward(pos, {i:-dir.i, j:-dir.j});
     }
+
+    var players = {};
+    self.getPlayers = function() {
+      return players;
+    }
+
+    self.getPlayer = getPlayer;
+    function getPlayer(uid) {
+      return players[uid];
+    }
+
+    self.addPlayer = addPlayer;
+    function addPlayer(player) {
+      if (player.maze) player.maze.removePlayer(player);
+      player.maze = self;
+      players[player.uid] = player;
+      movePlayer(player, player.pos);
+    }
+
+    self.removePlayer = removePlayer;
+    function removePlayer(player) {
+      player.maze = null;
+      delete players[player.uid];
+      movePlayer(player, null);
+    }
+
+    var playerMap = {};
+    self.getPlayerMap = function() {
+      return playerMap;
+    }
+
+    function posstr(pos) {
+      return '' + pos.i + ',' + pos.j;
+    }
+
+    self.movePlayer = movePlayer;
+    function movePlayer(player, topos, frompos) {
+      if (!frompos) frompos = player.pos;
+      if (frompos) {
+        var key = posstr(frompos);
+        var list = playerMap[key];
+        if (list) {
+          for (var i=0; i<list.length; i++) {
+            if (list[i] == player) {
+              list.splice(i,1);
+              if (list.length == 0) delete playerMap[key];
+              break;
+            }
+          }
+        }
+      }
+      if (topos) {
+        player.pos = topos;
+        var key = posstr(topos);
+        var list = playerMap[key];
+        if (list) list[list.length] = player;
+        else playerMap[key] = [player];
+      }
+    }
+
+    self.canSee = canSee;
+    function canSee(pos2, pos, dir) {
+      if (pos2.pos) pos2 = pos2.pos;
+      if (pos.pos) {
+        if (!dir) dir = pos.dir;
+        pos = pos.pos;
+      }
+      pos2i = pos2.i;
+      pos2j = pos2.j;
+      diri = dir.i;
+      dirj = dir.j;
+      while (canMoveForward(pos, dir)) {
+        pos = {i:pos.i+diri, j:pos.j+dirj};
+        if (pos2i==pos.i && pos2j==pos.j) return true;
+      }
+      return false;      
+    }
+
   }
 
   jsmaze.makeMaze = makeMaze;
@@ -197,7 +276,39 @@ if (typeof exports === 'undefined') {
 
   jsmaze.makeDefaultMaze = makeDefaultMaze;
   function makeDefaultMaze() {
-    return makeMaze(DEFAULT_MAP);
+    return new Maze(DEFAULT_MAP);
+  }
+
+  jsmaze.makeUID = makeUID;
+  function makeUID() {
+    var time = new Date().getTime();
+    var rand = (''+Math.random()).slice(2);
+    return '' + time + '.' + rand;
+  }
+
+  jsmaze.Player = Player;
+  function Player(props) {
+    var self = this;
+    init(props);
+
+    function init(props) {
+      if (!props) props = {};
+      self.uid = props.uid || makeUID();
+      self.name = props.name || 'Random';
+      self.images = props.images; // {front:<url>,back:<url>,left:<url>,right:<url>}
+      self.pos = props.pos || {i:0,j:0};
+      self.dir = props.dir || {i:0,j:1};
+      self.ghost = props.ghost; // true if can move through other players
+      self.maze = props.maze;
+      self.stepfun = props.stepfun; // stepfun(player) updates player
+      if (self.maze) {
+        maze.addPlayer(self);
+      }
+    }
+  }
+
+  jsmaze.makePlayer = function(props) {
+    return new Player(props);
   }
 
 })();                 // execute the function() at the top of the file
