@@ -20,7 +20,8 @@ var jsClientMaze = {};
 //   The mapOrMaze arg is optional, but you'll have to populate
 //   the maze() property with an instance of jsmaze.Maze if you omit it.
 //   If mapOrMaze is a jsmaze.Maze instance, just use it.
-//   Otherwise, it is an array of strings, as returned by the toMap() method.
+//   Otherwise, it is an array of strings, as returned by the
+//     jsmaze.toMap() method.
 //   The even strings describe the horizontal walls.
 //   The odd strings describe the vertical walls.
 //   Anything other than a space represents a wall.
@@ -73,10 +74,6 @@ var jsClientMaze = {};
 //    If canvas is not specified, use the current topViewCanvas()
 //  endEdit
 //    Stop editing on the canvas currently being edited upon.
-//  toMap
-//    Return a map for calling new jsClientMaze.ClientMaze() or
-//    new jsmaze.Maze()
-//    A jsmaze map is an array of strings.
 //  draw3d(canvas, pos, dir)
 //    Draw the 3d maze view on the canvas with the "eye" at pos looking in
 //    direction dir.
@@ -173,8 +170,8 @@ var jsClientMaze = {};
       var left = 1;
       var top = 1;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      var vert = maze.vert;
-      var horiz = maze.horiz;
+      var vert = maze.vert();
+      var horiz = maze.horiz();
 
       ctx.beginPath();
 
@@ -327,7 +324,7 @@ var jsClientMaze = {};
       var diffj = abs(rem0(j, floor(j)) - 0.5);
       if (diffj < diffi) {
         // It's a vertical line
-        vert = maze.vert;
+        vert = maze.vert();
         i = round(i);
         j = floor(j);
         if (i<=0 || i>=maze.width || j<0 || j>=maze.height) return;
@@ -335,7 +332,7 @@ var jsClientMaze = {};
         vert[j][i] = vert[j][i] ? 0 : 1;
       } else {
         // It's a horizontal line
-        horiz = maze.horiz;
+        horiz = maze.horiz();
         i = floor(i);
         j = round(j);
         if (i<0 || i>=maze.height || j<=0 || j>=maze.height) return;
@@ -347,29 +344,6 @@ var jsClientMaze = {};
       if (threeDCanvas()) {
         window.setTimeout(function(){threeDCanvas().focus();}, 1);
       }
-    }
-
-    self.toMap = toMap;
-    function toMap() {
-      var map = new Array();
-      var horiz = maze.horiz;
-      var vert = maze.vert;
-      var idx = 0;
-      for (var i=0; i<=maze.height; i++) {
-        var dov = (i<maze.height);
-        var ha = horiz[i];
-        var va = dov ? vert[i] : null;
-        var hs = '';
-        var vs = '';
-        for (var j=0; j<=maze.width; j++) {
-          var doh = (j<maze.width);
-          if (doh) hs += ha[j] ? '-' : ' ';
-          if (dov) vs += va[j] ? '|' : ' ';
-        }
-        map[idx++] = hs;
-        if (dov) map[idx++] = vs;
-      }
-      return map;
     }
 
     // If true, show spines even if no walls there.
@@ -399,8 +373,8 @@ var jsClientMaze = {};
       var height = canvas.height-2;
       var left = 1;
       var top = 1;
-      var vert = maze.vert;
-      var horiz = maze.horiz;
+      var vert = maze.vert();
+      var horiz = maze.horiz();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.beginPath();

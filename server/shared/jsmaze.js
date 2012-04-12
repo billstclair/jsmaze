@@ -39,13 +39,17 @@
 // width
 // height
 //   the width and height of the maze. Positive integers.
-// horiz
-// vert
-//   Two-dimensional arrays for the horizontal and vertical walls.
+// horiz()
+// vert()
+//   Return the two-dimensional arrays for the horizontal and vertical walls.
 //   horiz[j][i] true means that the horizontal wall at location [i,j]
 //   is there. Note that the vertical dimension comes first.
+//   With an argument, set the corresponding array.
 // clone()
 //   Return a copy of this jsmaze.Maze instance
+//  toMap()
+//    Return a map for calling "new jsmaze.Maze(map)"
+//    A jsmaze map is an array of strings.
 // canMoveForward(pos, dir)
 // canMoveBackward(pos, dir)
 //   True if an "eye" at location pos pointing in direction dir
@@ -67,12 +71,24 @@ if (typeof exports === 'undefined') {
     var self = this;
     if (map) init(map);
 
+    var vert;
+    self.vert = function(newvert) {
+      if (newvert === undefined) return vert;
+      vert = newvert;
+    }
+
+    var horiz;
+    self.horiz = function(newhoriz) {
+      if (newhoriz === undefined) return horiz;
+      horiz = newhoriz;
+    }
+
     function init (map) {
       if (map.length % 2 != 1) {
         throw('map must be an odd-length array of strings');
       }
-      var horiz = new Array();
-      var vert = new Array();
+      horiz = new Array();
+      vert = new Array();
       var w = map[0].length;
       var h = (map.length-1)/2;
       var idx = 0;
@@ -101,8 +117,6 @@ if (typeof exports === 'undefined') {
       }
       self.width = w;
       self.height = h;
-      self.horiz = horiz;
-      self.vert = vert;
     }
 
     function copy2d(arr) {
@@ -123,9 +137,30 @@ if (typeof exports === 'undefined') {
       var maze = new Maze();
       maze.width = self.width;
       maze.height = self.height;
-      maze.horiz = copy2d(self.horiz);
-      maze.vert = copy2d(self.vert);
+      maze.horiz(copy2d(horiz));
+      maze.vert(copy2d(vert));
       return maze;
+    }
+
+    self.toMap = toMap;
+    function toMap() {
+      var map = new Array();
+      var idx = 0;
+      for (var i=0; i<=self.height; i++) {
+        var dov = (i<self.height);
+        var ha = horiz[i];
+        var va = dov ? vert[i] : null;
+        var hs = '';
+        var vs = '';
+        for (var j=0; j<=self.width; j++) {
+          var doh = (j<self.width);
+          if (doh) hs += ha[j] ? '-' : ' ';
+          if (dov) vs += va[j] ? '|' : ' ';
+        }
+        map[idx++] = hs;
+        if (dov) map[idx++] = vs;
+      }
+      return map;
     }
 
     self.canMoveForward = canMoveForward;
@@ -133,8 +168,8 @@ if (typeof exports === 'undefined') {
       var i = pos.i;
       var j = pos.j
       return dir.i ?
-        !self.vert[j][(dir.i>0) ? i+1 : i] :
-        !self.horiz[(dir.j>0) ? j+1 : j][i];
+        !vert[j][(dir.i>0) ? i+1 : i] :
+        !horiz[(dir.j>0) ? j+1 : j][i];
     }
 
     self.canMoveBackward = canMoveBackward;
@@ -244,29 +279,29 @@ if (typeof exports === 'undefined') {
       if (dov) vert[idx] = va;
       idx++;
     }
-    maze.horiz = horiz;
-    maze.vert = vert;
+    maze.horiz(horiz);
+    maze.vert(vert);
     return maze;
   }
 
   var DEFAULT_MAP = ["----------",
-                     "||      | |",
+                     "||        |",
                      "  ------- ",
-                     "| |    | ||",
+                     "| |      ||",
                      "   -----  ",
-                     "|| |  | |||",
+                     "|| |    |||",
                      "    ---   ",
                      "||| |  ||||",
                      "     -    ",
-                     "||||  | |||",
-                     "    --    ",
+                     "||||| | |||",
+                     "    -     ",
                      "||||   | ||",
                      "   ----   ",
-                     "||| |   | |",
+                     "|||     | |",
                      "  ------  ",
-                     "|| |     ||",
+                     "||       ||",
                      " -------- ",
-                     "| |       |",
+                     "|         |",
                      "----------"];
 
   jsmaze.getDefaultMap = getDefaultMap;
@@ -302,7 +337,7 @@ if (typeof exports === 'undefined') {
       self.maze = props.maze;
       self.stepfun = props.stepfun; // stepfun(player) updates player
       if (self.maze) {
-        maze.addPlayer(self);
+        self.maze.addPlayer(self);
       }
     }
   }

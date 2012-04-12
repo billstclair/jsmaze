@@ -40,21 +40,8 @@ exports.stop = function() {
 
 // Handler for Express
 // From https://github.com/spadin/simple-express-static-server
-//app.get("/", function(req, res) {
-//  res.redirect("/index.html");
-//});
 
-app.get('/', function (req, res) {
-  var urlpath = url.parse(req.url).pathname;
-  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
-  var filepath = __dirname.split('/');
-  filepath = filepath.splice(0, filepath.length-2).join('/') + urlpath;
-  console.log('Getting', filepath, ' for URL:', urlpath);
-  res.sendfile(filepath);
-});
-
-
-app.configure(function(){
+app.configure(function() {
   app.use(express.methodOverride());
   app.use(express.bodyParser());
   var filepath = __dirname.split('/');
@@ -66,23 +53,6 @@ app.configure(function(){
   }));
   app.use(app.router);
 });
-
-// Handler for the built-in http class
-function handler (req, res) {
-  var urlpath = url.parse(req.url).pathname;
-  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
-  var filepath = __dirname + '/../..' + urlpath;
-  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
-  fs.readFile(filepath,
-              function (err, data) {
-                if (err) {
-                  res.writeHead(500);
-                  return res.end('Page not found');
-                }
-                res.writeHead(200);
-                res.end(data);
-              });
-}
 
 function getSocketEmitter(socket) {
   if (socket.jsMazeEmitter) return socket.jsMazeEmitter;
