@@ -1,7 +1,7 @@
 <html>
 <head>
   <script src='js/jquery.min.js'></script>
-  <script src='js/socket.io.min.js'></script>
+  <script src='socket.io/socket.io.js'></script>
   <script src='server/shared/jsmaze.js'></script>
   <script src='server/shared/evalFactory.js'></script>
   <script src='js/jsClientMaze.js'></script>
@@ -17,13 +17,19 @@ var maze;
 var canvas3d;
 var canvas;
 
+function getResource() {
+  var path = window.location.pathname;
+  path = path.split('/').slice(1,-1).join('/');
+  return path ? path + '/socket.io' : 'socket.io';
+}
+
 function connect(button) {
   var label = $(button).val();
   if (label == 'Connect') {
     maze.endEdit();
     maze.threeDCanvas(null);
     try {
-      client.connect('/', canvas3d, canvas);
+      client.connect('/', canvas3d, canvas, getResource());
       canvas3d.focus();
       $(button).val('Disconnect');
     } catch(err) {

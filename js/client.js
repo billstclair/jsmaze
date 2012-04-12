@@ -46,10 +46,12 @@ function Client() {
   }
 
   self.connect = connect;
-  function connect(serverURL, canvas3d, canvas) {
+  function connect(serverURL, canvas3d, canvas, resource) {
     _canvas3d = canvas3d;
     _canvas = canvas;
-    _socket = io.connect(serverURL, {'force new connection': true});
+    // The resource value here needs to be computed from the requesting URL
+    _socket = io.connect(serverURL, {'force new connection': true,
+                                     resource: resource});
     _socket.on('eval', function(data) {
       _evaluator.evaluate(_socket, data, log);
     });

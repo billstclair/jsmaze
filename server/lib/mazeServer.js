@@ -38,42 +38,33 @@ function MazeServer() {
     if (!state) return emitter('log',{message: 'No state for emitter.'});
     var pos = state.pos;
     var dir = state.dir;
-    var outfun = null;
-    var outargs = null;
     switch(fun) {
     case 'moveForward':
       if (maze.canMoveForward(pos, dir)) {
         pos.i += dir.i;
         pos.j += dir.j;
-        outfun = 'moveto';
-        outargs = {pos: pos};
+        emitter('moveto', {pos: pos});
       }
       break;
     case 'moveBack':
       if (maze.canMoveBackward(pos, dir)) {
         pos.i -= dir.i;
         pos.j -= dir.j;
-        outfun = 'moveto';
-        outargs = {pos: pos};
+        emitter('moveto', {pos: pos});
       }
       break;
     case 'turnRight':
       var di = dir.i;
       dir.i = -dir.j;
       dir.j = di;
-      outfun = 'turn'
-      outargs = {dir: dir};
+      emitter('turn', {dir: dir});
       break;
     case 'turnLeft':
       var di = dir.i;
       dir.i = dir.j;
       dir.j = -di;
-      outfun = 'turn'
-      outargs = {dir: dir};
+      emitter('turn', {dir: dir});
       break;
-    }
-    if (outfun) {
-      emitter(outfun, outargs);
     }
   }
 }

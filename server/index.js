@@ -9,5 +9,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-require('./lib/network').start();
+var argv = require('optimist').argv;
+var port = argv.p || argv.port || 6293;
+var uid = argv.uid || argv.u;
+var gid = argv.gid || argv.g;
+require('./lib/network').start(port, uid, gid);
 

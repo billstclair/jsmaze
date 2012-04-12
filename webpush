@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rsyncit --exclude server -av *
-cd server/shared
-rsyncit
+rsyncit --exclude .htaccess --exclude .git -av *
 
 

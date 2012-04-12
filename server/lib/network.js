@@ -8,7 +8,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-var app = require('http').createServer(handler);
+var app = require('express').createServer();
 var io = require('socket.io').listen(app);
 var fs = require('fs');
 var evaluator = require('../shared/evalFactory').makeEvaluator();
@@ -19,13 +19,42 @@ var defaultPort = 6293;          // MAZE on the telephone dialpad
 
 initEvaluator();
 
-exports.start = function(port) {
+exports.start = function(port, uid, gid) {
   if (!port) port = defaultPort;
+  console.log('Listening for connections on port: ', port);
   app.listen(port);
+  if (gid != undefined) process.setgid(gid);
+  if (uid != undefined) process.setuid(uid);
 }
 
 exports.stop = function() {
   app.close();
+}
+
+// Handler for Express
+app.get('/', function (req, res) {
+  var urlpath = url.parse(req.url).pathname;
+  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
+  var filepath = __dirname + '/../..' + urlpath;
+  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
+  res.sendfile(filepath);
+});
+
+// Handler for the built-in http class
+function handler (req, res) {
+  var urlpath = url.parse(req.url).pathname;
+  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
+  var filepath = __dirname + '/../..' + urlpath;
+  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
+  fs.readFile(filepath,
+              function (err, data) {
+                if (err) {
+                  res.writeHead(500);
+                  return res.end('Page not found');
+                }
+                res.writeHead(200);
+                res.end(data);
+              });
 }
 
 function getSocketEmitter(socket) {
@@ -47,22 +76,6 @@ io.sockets.on('connection', function (socket) {
     mazeServer.removeEmitter(emitter);
   });
 });
-
-function handler (req, res) {
-  var urlpath = url.parse(req.url).pathname;
-  if (urlpath.slice(-1) == '/') urlpath += 'index.html';
-  var filepath = __dirname + '/../..' + urlpath;
-  console.log('Getting ' + filepath + ' for URL: ' + urlpath);
-  fs.readFile(filepath,
-              function (err, data) {
-                if (err) {
-                  res.writeHead(500);
-                  return res.end('Page not found');
-                }
-                res.writeHead(200);
-                res.end(data);
-              });
-}
 
 function initEvaluator() {
   evaluator.register('getMaze', mazeServer.getmaze,
