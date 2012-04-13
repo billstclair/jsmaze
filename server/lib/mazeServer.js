@@ -16,8 +16,8 @@ function MazeServer() {
   var self = this;
   var map = jsmaze.getDefaultMap();
   var maze = new jsmaze.Maze(map);
-  var players = {};
-  var canSeeTab = {};           // map "i,j" to {<player>:<player>, ...}
+  var players = {};             // {<socketid>:<player>,...}
+  var canSeeTab = {};           // {"i,j":[<player>, ...], ...}
 
   self.maze = function() {
     return maze;
@@ -45,13 +45,47 @@ function MazeServer() {
     var player = jsmaze.makePlayer({name: name,
                                     maze: maze});
     players[socketid] = player;
-    addCanSee(player);
+    addCanSee(player, emitter);
     emitter('setMaze',{map: map});
+  }
+
+  function knownPlayers(player) {
+    return player.knownPlayers;
+  }
+
+  function addKnownPlayer(player, knownPlayer) {
+    if (!player.knownPlayers) player.knownPlayers = {};
+    player.knownPlayers[knownPlayer.uid] = knownPlayer;
+  }
+
+  function isKnownPlayer(player, knownPlayer) {
+    return player.knownPlayers && player.knownPlayers[knownPlayer.uid];
+  }
+
+  function removeKnownPlayer(player, knownPlayer) {
+    if (player.knownPlayers) {
+      delete player.knownPlayers[knownPlayer.uid];
+    }
+  }
+
+  function clearKnownPlayers(player) {
+    var known = player.knownPlayers;
+    delete player.knownPlayers;
+    if (known) {
+      for (var uid in known) {
+        removeKnownPlayer(known[uid], player);
+      }
+    }
   }
 
   self.removePlayer = removePlayer;
   function removePlayer(socketid) {
-    players[socketid] = null;
+    player = players[socketid];
+    if (player) {
+      delete players[socketid];
+      var playerid = player.uid;
+      clearKnownPlayers(player)
+    }
   }
 
   var posstr = jsmaze.posstr;
@@ -68,10 +102,21 @@ function MazeServer() {
     }
   }
 
-  function addCanSee(player) {
+  function addCanSee(player, emitter) {
     forEachCanSee(player, function(pos, tab, key) {
       if (!tab) canSeeTab[key] = tab = [];
       if (tab.indexOf(player)<0) tab.push(player);
+      if (emitter) {
+        var visible = maze.getPlayerMap(pos);
+        if (visible) {
+          for (var i=0; i<visible.length; i++) {
+            if (!isKnownPlayer(player, visible[i])) {
+              addKnownPlayer(player, visible[i]);
+              emitter.emit('addPlayer', {player: visible[i].clientProps()});
+            }
+          }
+        }
+      }
     });
   }
 
@@ -90,14 +135,14 @@ function MazeServer() {
   function doMove(player, emitter, pos) {
     removeCanSee(player);
     maze.movePlayer(player, pos);
-    addCanSee(player);
+    addCanSee(player, emitter);
     if (emitter) emitter('moveto', {pos: pos});
   }
 
   function doTurn(player, emitter, dir) {
     removeCanSee(player);
     player.dir = dir;
-    addCanSee(player);
+    addCanSee(player, emitter);
     if (emitter) emitter('turn', {dir: dir});
   }
 

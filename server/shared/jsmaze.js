@@ -202,8 +202,9 @@ if (typeof exports === 'undefined') {
       movePlayer(player, null, null);
     }
 
-    var playerMap = {};
-    self.getPlayerMap = function() {
+    var playerMap = {};         // ['i,j':[player,...],...}
+    self.getPlayerMap = function(pos) {
+      if (pos) return playerMap[posstr(pos)];
       return playerMap;
     }
 
@@ -335,6 +336,15 @@ if (typeof exports === 'undefined') {
       if (self.maze) {
         self.maze.addPlayer(self);
       }
+    }
+
+    self.clientProps  = function() {
+      return {uid: self.uid,
+              name: self.name,
+              images: self.images,
+              pos: self.pos,
+              dir: self.dir,
+              ghost: self.ghost};
     }
   }
 
