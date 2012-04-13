@@ -22,7 +22,7 @@ exports.io = io;
 
 var defaultPort = 6293;          // MAZE on the telephone dialpad
 
-initEvaluator();
+mazeServer.initEvaluator(evaluator);
 
 exports.start = function(port, uid, gid) {
   if (!port) port = defaultPort;
@@ -77,12 +77,3 @@ io.sockets.on('connection', function (socket) {
     mazeServer.removeEmitter(emitter);
   });
 });
-
-function initEvaluator() {
-  evaluator.register('getMaze', mazeServer.getmaze,
-                     'moveForward', mazeServer.move,
-                     'moveBack', mazeServer.move,
-                     'turnLeft', mazeServer.move,
-                     'turnRight', mazeServer.move);
-}
-

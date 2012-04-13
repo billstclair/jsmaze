@@ -192,14 +192,14 @@ if (typeof exports === 'undefined') {
       if (player.maze) player.maze.removePlayer(player);
       player.maze = self;
       players[player.uid] = player;
-      movePlayer(player, player.pos);
+      movePlayer(player, null, player.pos);
     }
 
     self.removePlayer = removePlayer;
     function removePlayer(player) {
       player.maze = null;
       delete players[player.uid];
-      movePlayer(player, null);
+      movePlayer(player, null, null);
     }
 
     var playerMap = {};
@@ -212,7 +212,7 @@ if (typeof exports === 'undefined') {
     }
 
     self.movePlayer = movePlayer;
-    function movePlayer(player, topos, frompos) {
+    function movePlayer(player, emitter, topos, frompos) {
       if (!frompos) frompos = player.pos;
       if (frompos) {
         var key = posstr(frompos);
@@ -233,7 +233,14 @@ if (typeof exports === 'undefined') {
         var list = playerMap[key];
         if (list) list[list.length] = player;
         else playerMap[key] = [player];
+        if (emitter) emitter('moveto', {pos: topos});
       }
+    }
+
+    self.turnPlayer = turnPlayer;
+    function turnPlayer(player, emitter, dir, olddir) {
+      player.dir = dir;
+      if (emitter) emitter('turn', {dir: dir});
     }
 
     self.canSee = canSee;

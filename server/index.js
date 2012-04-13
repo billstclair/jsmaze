@@ -17,10 +17,12 @@ var gid = argv.gid || argv.g;
 var network = require('./lib/network');
 network.start(port, uid, gid);
 
-// Enable REPL via telnet locahost 5001
+// Enable REPL via "telnet localhost 6292"
 var replport = 6292;
 require('net').createServer(function (socket) {
   var server = require('repl').start("node via TCP socket> ", socket);
   server.context.network = network;
+  server.context.mazeServer = network.mazeServer;
+  server.context.maze = network.mazeServer.maze();
 }).listen(replport);
 console.log('Listening for REPL connection on port', replport);

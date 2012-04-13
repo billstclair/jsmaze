@@ -1,3 +1,13 @@
+//////////////////////////////////////////////////////////////////////
+//
+// db.js
+// Copyright (c) 2012 Bill St. Clair
+// Some rights reserved.
+// Distributed under the Apache License, Version 2.0
+// http://www.apache.org/licenses/LICENSE-2.0.html
+//
+//////////////////////////////////////////////////////////////////////
+
 var redis = require('redis');
 var fs = require('fs');
 var crypto = require('crypto');

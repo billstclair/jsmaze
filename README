@@ -17,6 +17,7 @@ To run the server:
   node index.js --port=<port> --uid=<uid> --gid=<gid>
 
 All parameters are optional:
+
   <port> is the port to listen on for browser and server requests.
          default: 6239 (MAZE)
          Alternative spelling: "-p <port>"
