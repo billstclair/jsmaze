@@ -16,6 +16,10 @@ var evaluator = require('../shared/evalFactory').makeEvaluator();
 var mazeServer = require('./mazeServer');
 var url = require('url');
 
+exports.mazeServer = mazeServer;
+exports.evaluator = evaluator;
+exports.io = io;
+
 var defaultPort = 6293;          // MAZE on the telephone dialpad
 
 initEvaluator();

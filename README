@@ -8,22 +8,22 @@ flaky) at:
 
 The Git archive does NOT include required modules. To get them:
 
-cd /path/to/jsmaze   # or a parent directory. I use $HOME
-npm socket.io express redis optimist
+  cd /path/to/jsmaze   # or a parent directory. I use $HOME
+  npm socket.io express redis optimist
 
 To run the server:
 
-cd /path/to/jsmaze/server
-node index.js --port=<port> --uid=<uid> --gid=<gid>
+  cd /path/to/jsmaze/server
+  node index.js --port=<port> --uid=<uid> --gid=<gid>
 
 All parameters are optional:
-<port> is the port to listen on for browser and server requests.
-       default: 6239 (MAZE)
-       Alternative spelling: "-p <port>"
-<uid>  A user ID to switch to after doing the listen.
-       Alternative spelling: "-u <uid>"
-<gid>  A group ID to switch to after doing the listen.
-       Alternative spelling: "-g <gid>"
+  <port> is the port to listen on for browser and server requests.
+         default: 6239 (MAZE)
+         Alternative spelling: "-p <port>"
+  <uid>  A user ID to switch to after doing the listen.
+         Alternative spelling: "-u <uid>"
+  <gid>  A group ID to switch to after doing the listen.
+         Alternative spelling: "-g <gid>"
 
 For example:
 

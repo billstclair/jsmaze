@@ -13,5 +13,14 @@ var argv = require('optimist').argv;
 var port = argv.p || argv.port || 6293;
 var uid = argv.uid || argv.u;
 var gid = argv.gid || argv.g;
-require('./lib/network').start(port, uid, gid);
 
+var network = require('./lib/network');
+network.start(port, uid, gid);
+
+// Enable REPL via telnet locahost 5001
+var replport = 6292;
+require('net').createServer(function (socket) {
+  var server = require('repl').start("node via TCP socket> ", socket);
+  server.context.network = network;
+}).listen(replport);
+console.log('Listening for REPL connection on port', replport);

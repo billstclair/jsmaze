@@ -18,6 +18,10 @@ function MazeServer() {
   var maze = new jsmaze.Maze(map);
   var emitters = {};
 
+  self.maze = function() {
+    return maze;
+  }
+
   self.getmaze = getmaze;
   function getmaze(emitter, args) {
     var name = (args && args.name) || 'Random';
