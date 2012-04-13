@@ -110,9 +110,12 @@ function MazeServer() {
         var visible = maze.getPlayerMap(pos);
         if (visible) {
           for (var i=0; i<visible.length; i++) {
-            if (!isKnownPlayer(player, visible[i])) {
-              addKnownPlayer(player, visible[i]);
-              emitter.emit('addPlayer', {player: visible[i].clientProps()});
+            var vis = visible[i];
+            if (vis != player) {
+              if (!isKnownPlayer(player, vis)) {
+                addKnownPlayer(player, vis);
+                emitter('addPlayer', {player: vis.clientProps()});
+              }
             }
           }
         }
