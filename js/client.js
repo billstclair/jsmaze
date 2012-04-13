@@ -53,7 +53,7 @@ function Client() {
     _socket = io.connect(serverURL, {'force new connection': true,
                                      resource: resource});
     _socket.on('eval', function(data) {
-      _evaluator.evaluate(_socket, data, log);
+      _evaluator.evaluate(_socket.id, _socket, data, log);
     });
     emitEval('getMaze');
   }

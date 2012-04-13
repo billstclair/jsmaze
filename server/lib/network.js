@@ -71,9 +71,9 @@ function getSocketEmitter(socket) {
 io.sockets.on('connection', function (socket) {
   var emitter = getSocketEmitter(socket)
   socket.on('eval', function (data) {
-    evaluator.evaluate(emitter, data, console.log);
+    evaluator.evaluate(socket.id, emitter, data, console.log);
   });
   socket.on('disconnect', function() {
-    mazeServer.removeEmitter(emitter);
+    mazeServer.removePlayer(emitter);
   });
 });

@@ -207,12 +207,8 @@ if (typeof exports === 'undefined') {
       return playerMap;
     }
 
-    function posstr(pos) {
-      return '' + pos.i + ',' + pos.j;
-    }
-
     self.movePlayer = movePlayer;
-    function movePlayer(player, emitter, topos, frompos) {
+    function movePlayer(player, topos, frompos) {
       if (!frompos) frompos = player.pos;
       if (frompos) {
         var key = posstr(frompos);
@@ -233,14 +229,7 @@ if (typeof exports === 'undefined') {
         var list = playerMap[key];
         if (list) list[list.length] = player;
         else playerMap[key] = [player];
-        if (emitter) emitter('moveto', {pos: topos});
       }
-    }
-
-    self.turnPlayer = turnPlayer;
-    function turnPlayer(player, emitter, dir, olddir) {
-      player.dir = dir;
-      if (emitter) emitter('turn', {dir: dir});
     }
 
     self.canSee = canSee;
@@ -351,6 +340,11 @@ if (typeof exports === 'undefined') {
 
   jsmaze.makePlayer = function(props) {
     return new Player(props);
+  }
+
+  jsmaze.posstr = posstr;
+  function posstr(pos) {
+    return '' + pos.i + ',' + pos.j;
   }
 
 })();                 // execute the function() at the top of the file

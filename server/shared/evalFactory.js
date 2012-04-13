@@ -37,7 +37,7 @@ if (typeof exports === 'undefined') {
     }
 
     // [function,{name:value,...}]
-    self.evaluate = function(socket, functionAndArgs, errfun) {
+    self.evaluate = function(socketid, emitter, functionAndArgs, errfun) {
       try {
         var fun = functionAndArgs[0];
         var args = functionAndArgs[1];
@@ -46,7 +46,7 @@ if (typeof exports === 'undefined') {
         if (!f) {
           throw('No registered function: ' + fun);
         }
-        f(socket, args, fun);
+        f(emitter, args, socketid, fun);
       } catch (err) {
         if (typeof(errfun) === 'function') errfun(err);
         else throw(err);
