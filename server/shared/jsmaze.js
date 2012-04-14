@@ -251,6 +251,9 @@ if (typeof exports === 'undefined') {
       return false;      
     }
 
+    // Convenient to have this here as well as jsmaze.makePlayer
+    self.makePlayer = jsmaze.makePlayer;
+
   }
 
   jsmaze.makeMaze = makeMaze;

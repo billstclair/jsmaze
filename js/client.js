@@ -15,30 +15,33 @@ function Client() {
   
   init();
 
-  var _evaluator;
-  var _socket;
-  var _maze;
-  var _canvas3d;
-  var _canvas;
+  var evaluator;
+  var socket;
+  var maze;
+  var canvas3d;
+  var canvas;
 
   self.evaluator = function() {
-    return _evaluator;
+    return evaluator;
   }
 
   self.socket = function() {
-    return _socket;
+    return socket;
   }
 
   self.maze = function() {
-    return _maze;
+    return maze;
   }
 
   function init() {
-    _evaluator = evalFactory.makeEvaluator();
-    _evaluator.register('setMaze', setMaze,
-                       'log', socketLog,
-                       'moveto', moveto,
-                       'turn', turn);
+    evaluator = evalFactory.makeEvaluator();
+    evaluator.register('setMaze', setMaze,
+                        'log', socketLog,
+                        'addPlayer', addPlayer,
+                        'setPlayerPos', setPlayerPos,
+                        'removePlayer', removePlayer,
+                        'moveto', moveto,
+                        'turn', turn);
   }
 
   function log(x) {
@@ -46,38 +49,38 @@ function Client() {
   }
 
   self.connect = connect;
-  function connect(serverURL, canvas3d, canvas, resource) {
-    _canvas3d = canvas3d;
-    _canvas = canvas;
+  function connect(serverURL, newCanvas3d, newCanvas, resource) {
+    canvas3d = newCanvas3d;
+    canvas = newCanvas;
     // The resource value here needs to be computed from the requesting URL
-    _socket = io.connect(serverURL, {'force new connection': true,
+    socket = io.connect(serverURL, {'force new connection': true,
                                      resource: resource});
-    _socket.on('eval', function(data) {
-      _evaluator.evaluate(_socket.id, _socket, data, log);
+    socket.on('eval', function(data) {
+      evaluator.evaluate(socket.id, socket, data);  //, log);
     });
     emitEval('getMaze');
   }
 
   self.disconnect = disconnect;
   function disconnect() {
-    if (_socket) {
-      _socket.disconnect();
-      _socket = null;
+    if (socket) {
+      socket.disconnect();
+      socket = null;
     }
-    if (_maze) {
-      _maze.endEdit();
-      _maze.threeDCanvas(null);
-      _maze.serverProxy(_proxy);
-      _maze = null;
+    if (maze) {
+      maze.endEdit();
+      maze.threeDCanvas(null);
+      maze.serverProxy(proxy);
+      maze = null;
     }
   }
 
   function setMaze(socket, args) {
     var map = args.map;
-    _maze = new jsClientMaze.ClientMaze(map);
-    _maze.serverProxy(_proxy);
-    _maze.draw3d(_canvas3d);
-    _maze.topdraw(_canvas);
+    maze = new jsClientMaze.ClientMaze(map);
+    maze.serverProxy(proxy);
+    maze.draw3d(canvas3d);
+    maze.topdraw(canvas);
   }
   
   function socketLog(socket, args) {
@@ -85,24 +88,24 @@ function Client() {
   }
 
   function moveto(socket, args) {
-    _maze.topdrawpos(true);
-    _maze.pos = args.pos;
-    _maze.draw3d();
-    _maze.topdrawpos();
+    maze.topdrawpos(true);
+    maze.pos = args.pos;
+    maze.draw3d();
+    maze.topdrawpos();
   }
 
   function turn(socket, args) {
-    _maze.topdrawpos(true);
-    _maze.dir = args.dir;
-    _maze.draw3d();
-    _maze.topdrawpos();
+    maze.topdrawpos(true);
+    maze.dir = args.dir;
+    maze.draw3d();
+    maze.topdrawpos();
   }
 
   function emitEval(fun, args) {
     if (!args) args = null;
     var form = [fun, args];
     console.log('Emitting eval: ' + JSON.stringify(form));
-    _socket.emit('eval', form);
+    socket.emit('eval', form);
   }
 
   function moveForward() {
@@ -121,9 +124,41 @@ function Client() {
     emitEval('turnLeft');
   }
 
-  var _proxy = {moveForward: moveForward,
+  var proxy = {moveForward: moveForward,
                 moveBack: moveBack,
                 turnRight: turnRight,
                 turnLeft: turnLeft};
-  self.proxy = _proxy;
+  self.proxy = proxy;
+
+  // Other players
+
+  function addPlayer(socket, args) {
+    var props = args.player;
+    if (!props) {
+      console.log('Server sent addPlayer with no props');
+      return;
+    }
+    maze.addPlayer(props);
+  }
+
+  function removePlayer(socket, args) {
+    var uid = args.uid;
+    if (!uid) {
+      console.log('Server sent removePlayer with no uid.');
+      return;
+    }
+    maze.removePlayer(uid);
+  }
+
+  function setPlayerPos(socket, args) {
+    var uid = args.uid;
+    var pos = args.pos;
+    var dir = args.dir;
+    if (!(uid && (pos || dir))) {
+      console.log('Server sent setPlayerPos with missing parameter.');
+      return;
+    }
+    maze.setPlayerPos(uid, pos, dir);
+  }
+
 }

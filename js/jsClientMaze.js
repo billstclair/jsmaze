@@ -121,6 +121,32 @@ var jsClientMaze = {};
       return maze;
     }
 
+    self.addPlayer = function(props) {
+      var player = jsmaze.makePlayer(props);
+      maze.addPlayer(player);
+      draw3d();
+    }
+
+    self.removePlayer = function(uid) {
+      var player = maze.getPlayer(uid);
+      if (!player) {
+        console.log('removePlayer, no player for uid:', uid);
+        return;
+      }
+      maze.removePlayer(player);
+      draw3d();
+    }
+
+    self.setPlayerPos = function(uid, pos, dir) {
+      var player = maze.getPlayer(uid);
+      if (!player) {
+        console.log('setPlayerPos, no player for uid:', uid);
+      }
+      if (pos) maze.movePlayer(player, pos);
+      if (dir) player.dir = dir;
+      draw3d();
+    }
+
     self.clone = clone;
     function clone() {
       return new ClientMaze(maze.clone());
