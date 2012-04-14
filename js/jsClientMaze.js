@@ -105,9 +105,51 @@ var jsClientMaze = {};
     if (alertp) alert(msg);
   }
 
+  // From http://stackoverflow.com/a/7462767
+  jsClientMaze.determineFontHeight = determineFontHeight;
+  function determineFontHeight(fontStyle) {
+    var body = document.getElementsByTagName("body")[0];
+    var dummy = document.createElement("div");
+    var dummyText = document.createTextNode("M");
+    dummy.appendChild(dummyText);
+    dummy.setAttribute("style", fontStyle);
+    body.appendChild(dummy);
+    var result = dummy.offsetHeight;
+    body.removeChild(dummy);
+    return result;
+  };
+
+  var fontFamily = 'Verdana';
+  jsClientMaze.fontFamily = function(family) {
+    if (family) fontFamily = family;
+    return fontFamily;
+  }
+
+  jsClientMaze.fontStyle = fontStyle;
+  function fontStyle(points) {
+    return 'font-family: ' + fontFamily + '; font-size: ' + points + ';';
+  }
+
+  var fontSizeTable = null;
+  jsClientMaze.fontSizeTable = function() {
+    return fontSizeTable;
+  }
+
+  var fontPoints = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+  function computeFontSizes() {
+    fontSizeTable = {};
+    for (var i=0; i<fontPoints.length; i++) {
+      var points = fontPoints[i];
+      fontSizeTable[points] = determineFontHeight(fontStyle(points));
+    }
+  }
+
   jsClientMaze.ClientMaze = ClientMaze;
   function ClientMaze(mapOrMaze) {
     var self = this;
+
+    if (!fontSizeTable) computeFontSizes();
 
     var maze;
     if (mapOrMaze && mapOrMaze!=undefined) {
@@ -657,7 +699,6 @@ var jsClientMaze = {};
         var i = p.i;
         var j = p.j;
         var players = maze.getPlayerMap({i:i, j:j});
-        console.log('drawPlayers, i:',i,' j:',j,'players:',players);
         if (!players) continue;
         var x = p.x;
         var y = p.y;
@@ -685,8 +726,123 @@ var jsClientMaze = {};
       dy = (factor * height)/2;
       top += dy;
       height -= dy;
-      ctx.fillStyle = 'blue';
+
+      var dir = self.dir;
+      var pdir = player.dir;
+      var side = (dir.i==0) ?
+        ((pdir.i==0) ?
+         ((dir.j==pdir.j) ? 'back' : 'front') :
+         ((dir.j==pdir.i) ? 'left' : 'right')) :
+        ((pdir.i==0) ?
+         ((dir.i==pdir.j) ? 'right' : 'left') :
+         ((dir.i==pdir.i) ? 'back' : 'front'));
+
+      if (player.images) {
+        drawImagePlayer(ctx, player, side, left, top, width, height);
+      }
+      else {
+        drawDefaultPlayer(ctx, player, side, left, top, width, height);
+      }
+
+      drawPlayerName(ctx, player, y, left, top, width, height);
+    }
+
+    function drawDefaultPlayer(ctx, player, side, left, top, width, height) {
+      var bodyleft = left;
+      var bodywidth = width;
+      var lrdelta = 0.2*width;
+      if (side=='left' || side=='right') {
+        bodywidth -= lrdelta;
+        if (side=='left') bodyleft += lrdelta;
+      }
+
+      // clear space
+      ctx.fillStyle = 'white';
+      ctx.fillRect(bodyleft, top, bodywidth, height);
+
+      // Start drawing lines
+      ctx.beginPath();
+
+      var w = ctx.lineWidth;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle='blue';
+
+      // Draw main rectangle
+      ctx.moveTo(bodyleft, top);
+      ctx.lineTo(bodyleft+bodywidth, top);
+      ctx.lineTo(bodyleft+bodywidth, top+height);
+      ctx.lineTo(bodyleft, top+height);
+      ctx.lineTo(bodyleft, top);
+
+      // Fill in features
+      var nosetop = 0.25*height;
+      var nosebot = 0.6*height;
+      var earmid = 0.4*height;
+      var earleft = 0.35*bodywidth;
+      if (side == 'front') {
+        var eyemid = 0.3*width;
+        var eyewid = 0.2*width;
+        var eyeleft = eyemid - eyewid/2;
+        var eyetop = 0.2*height;
+        var eyebot = 0.33*height;
+        ctx.moveTo(left+eyeleft, top+eyebot);
+        ctx.lineTo(left+eyemid, top+eyetop);
+        ctx.lineTo(left+eyeleft+eyewid, top+eyebot);
+        ctx.moveTo(left+width-eyeleft, top+eyebot);
+        ctx.lineTo(left+width-eyemid, top+eyetop);
+        ctx.lineTo(left+width-eyeleft-eyewid, top+eyebot);
+        var nosetop = 0.4*height;
+        var nosebot = 0.55*height;
+        var noseleft = 0.4*width;
+        ctx.moveTo(left+width/2, top+nosetop);
+        ctx.lineTo(left+noseleft, top+nosebot);
+        var mouthbot = 0.8*height;
+        var mouthtop = 0.7*height;
+        var mouthleft = eyeleft;
+        var mouthmid = eyemid;
+        ctx.moveTo(left+mouthleft, top+mouthtop);
+        ctx.lineTo(left+mouthmid, top+mouthbot);
+        ctx.lineTo(left+width-mouthmid, top+mouthbot);
+        ctx.lineTo(left+width-mouthleft, top+mouthtop);
+      } else if (side == 'left') {
+        ctx.moveTo(bodyleft, top+nosetop);
+        ctx.lineTo(left, top+nosebot);
+        ctx.lineTo(bodyleft, top+nosebot);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bodyleft+bodywidth/2, top+nosetop);
+        ctx.lineTo(bodyleft+bodywidth-earleft, top+nosetop);
+        ctx.lineTo(bodyleft+bodywidth-earleft, top+earmid);
+        ctx.lineTo(bodyleft+bodywidth/2, top+nosebot);
+      } else if (side == 'right') {
+        ctx.moveTo(left+bodywidth, top+nosetop);
+        ctx.lineTo(left+width, top+nosebot);
+        ctx.lineTo(left+bodywidth, top+nosebot);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bodyleft+bodywidth/2, top+nosetop);
+        ctx.lineTo(bodyleft+earleft, top+nosetop);
+        ctx.lineTo(bodyleft+earleft, top+earmid);
+        ctx.lineTo(bodyleft+bodywidth/2, top+nosebot);
+      }
+
+      ctx.stroke();
+      ctx.lineWidth = w;
+    }
+
+    // For now
+    var drawImagePlayer = drawDefaultPlayer;
+
+    // Not used
+    function drawTrivialPlayer(ctx, player, side, left, top, width, height) {
+      ctx.fillStyle = 'lightblue';
       ctx.fillRect(left, top, width, height);
+    }
+
+    function drawPlayerName(ctx, player, y, left, top, width, height) {
+      // *** TODO ***
     }
 
     function addKeyListener(canvas) {
