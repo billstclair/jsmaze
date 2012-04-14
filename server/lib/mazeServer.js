@@ -120,7 +120,7 @@ function MazeServer() {
     }
   }
 
-  function addCanSee(player) {
+  function addCanSee(player, noPos) {
     forEachCanSee(player, function(pos, tab, key) {
       if (!tab) canSeeTab[key] = tab = [];
       if (tab.indexOf(player)<0) tab.push(player);
@@ -132,6 +132,9 @@ function MazeServer() {
             if (vis != player) {
               if (!isKnownPlayer(player, vis)) {
                 addKnownPlayer(player, vis);
+              } else if (!noPos) {
+                var args = {uid:vis.uid, pos:vis.pos, dir:vis.dir};
+                player.emitter('setPlayerPos', args);
               }
             }
           }
@@ -181,7 +184,7 @@ function MazeServer() {
     removeCanSee(player);
     var notifyTab = whoCanSee(player.pos);
     maze.movePlayer(player, pos);
-    addCanSee(player);
+    addCanSee(player, null);
     notifyTab = whoCanSee(player.pos, notifyTab);
     if (player.emitter) player.emitter('moveto', {pos: pos});
     sendRefreshNotifications(player, notifyTab);
