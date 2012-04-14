@@ -647,6 +647,9 @@ var jsClientMaze = {};
       ctx.lineTo(left+width-lastxRight, top+height-y);
     }
 
+    // When I add images for players, need to draw all players,
+    // from back to front, so transparent regions let players behind
+    // show through.
     function drawPlayers(ctx, playerStack, left, top, width, height) {
       for (var s=0; s<playerStack.length; s++) {
         var p = playerStack[s];

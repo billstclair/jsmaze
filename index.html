@@ -23,6 +23,11 @@ function getResource() {
   return path ? path + '/socket.io' : 'socket.io';
 }
 
+function start() {
+  localSetup(false, true);
+  connect($('#connectButton')[0]);
+}
+
 function connect(button) {
   var label = $(button).val();
   if (label == 'Connect') {
@@ -46,7 +51,7 @@ function connect(button) {
   }
 }
 
-function localSetup(keepmaze) {
+function localSetup(keepmaze, nodraw) {
 // Alternating horizontal and vertical wals
   var map = ["----------",
              "||      | |",
@@ -71,15 +76,17 @@ function localSetup(keepmaze) {
   if (!keepmaze || !maze) maze = new jsClientMaze.ClientMaze(map);
   canvas3d = $('#draw')[0];
   canvas = $('#topview')[0];
-  maze.draw3d(canvas3d);
-  maze.edit(canvas);
-  canvas3d.focus();
+  if (!nodraw) {
+    maze.draw3d(canvas3d);
+    maze.edit(canvas);
+    canvas3d.focus();
+  }
 }
   </script>
   <title>jsMaze</title>
   <meta name='viewport' content='width=720'/>
 </head>
-<body onload='localSetup()'>
+<body onload='start();'>
   <center>
     <table>
       <tr>
