@@ -376,6 +376,8 @@ var jsClientMaze = {};
     // Looks wrong when there is no spine, but in
     // a wide-open maze, you get lots of white space
     // that doesn't really belong there.
+    // Eventually, render correctly in a wide-open maze, but
+    // that's fairly complicated, on client AND server.
     self.showSpines = true;
 
     self.draw3d = draw3d;
@@ -445,6 +447,8 @@ var jsClientMaze = {};
       var lastyRight = null;
       var lastWallLeft = true;
       var lastWallRight = true;
+
+      var playerStack = [];
 
       // Loop
       for (s=1; s<maxsteps; s++) {
@@ -522,15 +526,19 @@ var jsClientMaze = {};
           }
           break;
         }
+
         i += di;
         j += dj;
+        if (i<0 || i>width || j<0 || j>height) break;
+        playerStack.push({i:i,j:j,x:x,y:y,dx:dx,dy:dy});
         dx = dx * factor;
         dy = dy * factor;
-        if (i<0 || i>width || j<0 || j>height) break;
       }
 
       ctx.strokeStyle='black';
       ctx.stroke();
+
+      drawPlayers(ctx, playerStack, left, top, width, height);
     }
 
     function drawWallRight(ctx, x, y, nextx, nexty, left, top, width, height) {
@@ -637,6 +645,45 @@ var jsClientMaze = {};
       ctx.lineTo(left+width-lastxRight, top+y);
       ctx.moveTo(left+width-x, top+height-y);
       ctx.lineTo(left+width-lastxRight, top+height-y);
+    }
+
+    function drawPlayers(ctx, playerStack, left, top, width, height) {
+      for (var s=0; s<playerStack.length; s++) {
+        var p = playerStack[s];
+        if (!p) continue;
+        var i = p.i;
+        var j = p.j;
+        var players = maze.getPlayerMap({i:i, j:j});
+        console.log('drawPlayers, i:',i,' j:',j,'players:',players);
+        if (!players) continue;
+        var x = p.x;
+        var y = p.y;
+        var dx = p.dx;
+        var dy = p.dy;
+        x += dx/2;
+        y += dy/2;
+        var player = players[players.length-1];
+        drawPlayer(ctx, player, x, y, dx/2, dy/2, left, top, width, height);
+        return;
+      }
+    }
+
+    function drawPlayer(ctx, player, x, y, dx, dy, left, top, width, height) {
+      var name = player.name;
+      y += dy;
+      left += x;
+      top += y;
+      width -= 2*x;
+      height -= (2*y-dy);
+      var factor = 0.3;
+      dx = (factor * width)/2;
+      left += dx;
+      width -= 2*dx;
+      dy = (factor * height)/2;
+      top += dy;
+      height -= dy;
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(left, top, width, height);
     }
 
     function addKeyListener(canvas) {

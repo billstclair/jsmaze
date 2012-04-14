@@ -192,7 +192,7 @@ if (typeof exports === 'undefined') {
       if (player.maze) player.maze.removePlayer(player);
       player.maze = self;
       players[player.uid] = player;
-      movePlayer(player, null, player.pos);
+      movePlayer(player, player.pos);
     }
 
     self.removePlayer = removePlayer;
