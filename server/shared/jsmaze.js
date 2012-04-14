@@ -197,9 +197,9 @@ if (typeof exports === 'undefined') {
 
     self.removePlayer = removePlayer;
     function removePlayer(player) {
+      movePlayer(player, null, null);
       player.maze = null;
       delete players[player.uid];
-      movePlayer(player, null, null);
     }
 
     var playerMap = {};         // ['i,j':[player,...],...}

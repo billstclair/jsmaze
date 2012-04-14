@@ -70,10 +70,11 @@ function getSocketEmitter(socket) {
 
 io.sockets.on('connection', function (socket) {
   var emitter = getSocketEmitter(socket)
+  var socketid = socket.id;
   socket.on('eval', function (data) {
-    evaluator.evaluate(socket.id, emitter, data, console.log);
+    evaluator.evaluate(socketid, emitter, data, console.log);
   });
   socket.on('disconnect', function() {
-    mazeServer.removePlayer(emitter);
+    mazeServer.removePlayer(socketid);
   });
 });

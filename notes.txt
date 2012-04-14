@@ -21,6 +21,9 @@ get some really good node packages :)
    $ npm install connect redis connect-redis jade express express-resource futures emailjs
 </quote>
 
+http://alienvps.com/
+  $5/month VPS hosting.
+
 futures and emailjs look interesting.
 
 http://redis.io/
@@ -31,6 +34,12 @@ http://redis.io/
 http://socket.io/
   Cool client and server sockets
   npm install socket.io
+
+require() in the browser
+  http://requirejs.org/docs/release/1.0.7/comments/require.js
+
+Make node modules work in the browser
+  https://github.com/substack/node-browserify
 
 Transforming images:
   https://developer.mozilla.org/en/CSS/transform
