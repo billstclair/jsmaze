@@ -805,7 +805,7 @@ var jsClientMaze = {};
       ctx.font = Math.floor(dy) + 'px Arial';
       var textWidth = ctx.measureText(name).width;
       if (textWidth > width) textWidth = width;
-      console.log(ctx.font, 'textWidth:', textWidth, 'dy:', dy, 'top:', top);
+      //console.log(ctx.font, 'textWidth:', textWidth, 'dy:', dy, 'top:', top);
       ctx.fillText(name, left + width/2 - textWidth/2, top - dy/4, textWidth);
     }
 

@@ -28,10 +28,32 @@ function start() {
   connect($('#connectButton')[0]);
 }
 
+function setCookie(c_name,value,exdays) {
+  var exdate = new Date();
+  exdate.setDate(exdate.getDate() + exdays);
+  var c_value = escape(value) +
+    (exdays ? '; expires='+exdate.toUTCString() : '');
+  document.cookie = c_name + '=' + c_value;
+}
+
+function getCookie(c_name) {
+  var cookies=document.cookie.split(";");
+  for (var i=0;i<cookies.length;i++) {
+    var cookie = cookies[i];
+    var idx = cookie.indexOf('=');
+    var x = cookies[i].substr(0,idx);
+    var y = cookies[i].substr(idx+1);
+    x = x.replace(/^\s+|\s+$/g,"");
+    if (x == c_name) return unescape(y);
+  }
+}
+
 var playerName = null;
 function getPlayerName() {
+  if (!playerName) playerName = getCookie('playerName');
   for (;!playerName;) {
-    playerName = prompt("Enter a nickname for the game:", "");
+    playerName = prompt("Enter a player nickname:", "");
+    setCookie('playerName', playerName, 180);
   }
   return playerName;
 }
@@ -45,6 +67,7 @@ function connect(button) {
       client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
+      $('#changeName').attr('disabled', null);
     } catch(err) {
       alert('Error connecting with server: ' + err);
       localSetup(true);
@@ -55,8 +78,18 @@ function connect(button) {
     } catch(err) {
     }
     $(button).val('Connect');
+    $('#changeName').attr('disabled', 'disabled');
     localSetup(true);
   }
+}
+
+function changeName() {
+  playerName = null;
+  setCookie('playerName', '');
+  client.disconnect();
+  var button = $('#connectButton');
+  $(button).val('Connect');
+  connect(button);
 }
 
 function localSetup(keepmaze, nodraw) {
@@ -114,6 +147,8 @@ function localSetup(keepmaze, nodraw) {
               <input type='checkbox' checked='checked'
                       onClick='setSpines(this)'/>
                Show Spines
+              <input type='submit' id='changeName' value='Change Name'
+                     onClick = 'changeName()'/>
             </p>
             <h2>jsMaze</h2>
             <p>To control with keyboard, click on 3d (upper) view.<br/>
