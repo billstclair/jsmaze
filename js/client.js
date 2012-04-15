@@ -49,7 +49,7 @@ function Client() {
   }
 
   self.connect = connect;
-  function connect(serverURL, newCanvas3d, newCanvas, resource) {
+  function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
     canvas3d = newCanvas3d;
     canvas = newCanvas;
     // The resource value here needs to be computed from the requesting URL
@@ -58,7 +58,7 @@ function Client() {
     socket.on('eval', function(data) {
       evaluator.evaluate(socket.id, socket, data);  //, log);
     });
-    emitEval('getMaze');
+    emitEval('getMaze', {name: name});
   }
 
   self.disconnect = disconnect;

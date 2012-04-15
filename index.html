@@ -28,13 +28,21 @@ function start() {
   connect($('#connectButton')[0]);
 }
 
+var playerName = null;
+function getPlayerName() {
+  for (;!playerName;) {
+    playerName = prompt("Enter a nickname for the game:", "");
+  }
+  return playerName;
+}
+
 function connect(button) {
   var label = $(button).val();
   if (label == 'Connect') {
     maze.endEdit();
     maze.threeDCanvas(null);
     try {
-      client.connect('/', canvas3d, canvas, getResource());
+      client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
     } catch(err) {

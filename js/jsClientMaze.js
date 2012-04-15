@@ -105,51 +105,9 @@ var jsClientMaze = {};
     if (alertp) alert(msg);
   }
 
-  // From http://stackoverflow.com/a/7462767
-  jsClientMaze.determineFontHeight = determineFontHeight;
-  function determineFontHeight(fontStyle) {
-    var body = document.getElementsByTagName("body")[0];
-    var dummy = document.createElement("div");
-    var dummyText = document.createTextNode("M");
-    dummy.appendChild(dummyText);
-    dummy.setAttribute("style", fontStyle);
-    body.appendChild(dummy);
-    var result = dummy.offsetHeight;
-    body.removeChild(dummy);
-    return result;
-  };
-
-  var fontFamily = 'Verdana';
-  jsClientMaze.fontFamily = function(family) {
-    if (family) fontFamily = family;
-    return fontFamily;
-  }
-
-  jsClientMaze.fontStyle = fontStyle;
-  function fontStyle(points) {
-    return 'font-family: ' + fontFamily + '; font-size: ' + points + ';';
-  }
-
-  var fontSizeTable = null;
-  jsClientMaze.fontSizeTable = function() {
-    return fontSizeTable;
-  }
-
-  var fontPoints = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
-  function computeFontSizes() {
-    fontSizeTable = {};
-    for (var i=0; i<fontPoints.length; i++) {
-      var points = fontPoints[i];
-      fontSizeTable[points] = determineFontHeight(fontStyle(points));
-    }
-  }
-
   jsClientMaze.ClientMaze = ClientMaze;
   function ClientMaze(mapOrMaze) {
     var self = this;
-
-    if (!fontSizeTable) computeFontSizes();
 
     var maze;
     if (mapOrMaze && mapOrMaze!=undefined) {
@@ -744,7 +702,7 @@ var jsClientMaze = {};
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
-      drawPlayerName(ctx, player, y, left, top, width, height);
+      drawPlayerName(ctx, player, y, dy, left, top, width, height);
     }
 
     function drawDefaultPlayer(ctx, player, side, left, top, width, height) {
@@ -841,8 +799,14 @@ var jsClientMaze = {};
       ctx.fillRect(left, top, width, height);
     }
 
-    function drawPlayerName(ctx, player, y, left, top, width, height) {
-      // *** TODO ***
+    function drawPlayerName(ctx, player, y, dy, left, top, width, height) {
+      var name = player.name;
+      ctx.fillStyle = 'purple';
+      ctx.font = Math.floor(dy) + 'px Arial';
+      var textWidth = ctx.measureText(name).width;
+      if (textWidth > width) textWidth = width;
+      console.log(ctx.font, 'textWidth:', textWidth, 'dy:', dy, 'top:', top);
+      ctx.fillText(name, left + width/2 - textWidth/2, top - dy/4, textWidth);
     }
 
     function addKeyListener(canvas) {
