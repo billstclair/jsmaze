@@ -42,7 +42,8 @@ function Client() {
                        'setPlayerPos', setPlayerPos,
                        'removePlayer', removePlayer,
                        'moveto', moveto,
-                       'turn', turn);
+                       'turn', turn,
+                       'chat', receiveChat);
   }
 
   function log(x) {
@@ -50,6 +51,7 @@ function Client() {
   }
 
   var playerName = null;
+  self.chatPromptFun = null;
 
   self.connect = connect;
   function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
@@ -88,6 +90,7 @@ function Client() {
   function setMaze(socket, args) {
     var map = args.map;
     maze = new jsClientMaze.ClientMaze(map);
+    maze.chatPromptFun(self.chatPromptFun);
     maze.playerName(playerName);
     maze.serverProxy(proxy);
     maze.draw3d(canvas3d);
@@ -176,4 +179,15 @@ function Client() {
     maze.playerProps(props, isSelf);
   }
 
+  self.chat = function(msg) {
+    emitEval('chat', {msg: msg});
+  }
+
+  // Need to have a hook so index.html can add the message
+  // to a scrolling TextArea.
+  function receiveChat(socket, args) {
+    var name = args.name;
+    var msg = args.msg;
+    maze.receiveChat(name, msg);
+  }
 }

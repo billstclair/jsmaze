@@ -572,9 +572,17 @@ var jsClientMaze = {};
       ctx.strokeStyle='black';
       ctx.stroke();
 
+      var pnh = 18;
       if (self.playerName()) {
-        var pnh = 18;
         drawPlayerName(ctx, self.playerName(), pnh, left, top+1.5*pnh, width);
+      }
+      if (lastChatMsg) {
+        drawPlayerName(ctx, lastChatMsg, pnh,
+                       left+width*0.05, top+height-1.5*pnh, 0.9*width);
+      }
+      if (chatMsg) {
+        drawPlayerName(ctx, chatMsg, pnh,
+                       left+width*0.05, top+height-0.25*pnh, 0.9*width);
       }
 
       drawPlayers(ctx, playerStack, left, top, width, height);
@@ -924,6 +932,7 @@ var jsClientMaze = {};
       else if (key==83 || key==75 || key==40) moveBack(); // SKv
       else if (key==65 || key==74 || key==37) turnLeft(); // AJ<
       else if (key==68 || key==76 || key==39) turnRight(); // DL>
+      else if (key==67) chatPrompt();                      // C
       else nodefault = false;
       if (nodefault) event.preventDefault();
     }
@@ -985,6 +994,24 @@ var jsClientMaze = {};
       self.dir.j = -di;
       draw3d();
       topdrawpos();
+    }
+
+    var chatPromptFun = null;
+    self.chatPromptFun = function(fun) {
+      if (fun) chatPromptFun = fun;
+      return chatPromptFun;
+    }
+
+    function chatPrompt() {
+      if (chatPromptFun) chatPromptFun(self);
+    }
+
+    var lastChatMsg = null;
+    var chatMsg = null;
+    self.receiveChat = function(name, msg) {
+      lastChatMsg = chatMsg;
+      chatMsg = name + ': ' + msg;
+      draw3d();
     }
   }
 

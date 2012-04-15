@@ -37,7 +37,8 @@ function MazeServer() {
                        'moveBack', move,
                        'turnLeft', move,
                        'turnRight', move,
-                       'playerProps', playerProps);
+                       'playerProps', playerProps,
+                       'chat', chat);
   }
 
   function getmaze(emitter, args, socketid) {
@@ -249,5 +250,36 @@ function MazeServer() {
       });
     }
   }
-   
+
+  function forEachCouldSee(player, fun) {
+    function each(dir) {
+      var pos = player.pos;
+      while (maze.canMoveForward(pos, dir)) {
+        pos.i += dir.i;
+        pos.j += dir.j;
+        var players = maze.getPlayerMap(pos);
+        if (players) {
+          for (var i=0; i<players.length; i++) {
+            fun(players[i]);            
+          }
+        }
+      }
+    }
+    each({i:0, j:1});
+    each({i:1, j:0});
+    each({i:-1, j:0});
+    each({i:0, j:-1});
+  }
+
+  function chat(emitter, args, socketid, fun) {
+    var player = players[socketid];
+    if (!player) return emitter('log',{message: 'No player for connection.'});
+    var msg = args.msg;
+    if (!msg) return;
+    var name = player.name;
+    args = {name:name, msg:msg};
+    forEachCouldSee(player, function(otherPlayer) {
+      otherPlayer.emitter('chat', args);
+    });
+  }
 }

@@ -68,6 +68,7 @@ function connect(button) {
     maze.endEdit();
     maze.threeDCanvas(null);
     try {
+      client.chatPromptFun = chatPrompt;
       client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
@@ -95,6 +96,11 @@ function changeName() {
     client.changeName(newname);
   }
   canvas3d.focus();
+}
+
+function chatPrompt() {
+  var msg = prompt('Say something:');
+  client.chat(msg);
 }
 
 function localSetup(keepmaze, nodraw) {
@@ -157,7 +163,7 @@ function localSetup(keepmaze, nodraw) {
             </p>
             <h2>jsMaze</h2>
             <p>To control with keyboard, click on 3d (upper) view.<br/>
-              Controls: WASD, IJKL, arrow keys.<br>
+              Controls: WASD, IJKL, arrow keys. C to chat.<br>
             On touch screens, tap and hold top, bottom, left, or right
               of 3d view.<br/>
             Middle section of 3d view can be used for drag, pinch, or
