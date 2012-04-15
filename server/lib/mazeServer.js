@@ -36,10 +36,10 @@ function MazeServer() {
                        'moveForward', move,
                        'moveBack', move,
                        'turnLeft', move,
-                       'turnRight', move);
+                       'turnRight', move,
+                       'playerProps', playerProps);
   }
 
-  self.getmaze = getmaze;
   function getmaze(emitter, args, socketid) {
     emitter('setMaze',{map: map});
     var name = (args && args.name) || 'Random';
@@ -48,6 +48,7 @@ function MazeServer() {
     players[socketid] = player;
     player.emitter = emitter;
     doMove(player, player.pos);
+    emitter('playerProps', {isSelf: true, props: player.clientProps()});
   }
 
   function knownPlayers(player) {
@@ -83,6 +84,17 @@ function MazeServer() {
     if (known) {
       for (var uid in known) {
         removeKnownPlayer(known[uid], player);
+      }
+    }
+  }
+
+  function forEachKnower(player, fun) {
+    var uid = player.uid;
+    for (var socketid in players) {
+      p = players[socketid];
+      if (p!=player && p.knownPlayers[uid]) {
+        fun(p);
+        break;
       }
     }
   }
@@ -199,7 +211,6 @@ function MazeServer() {
     sendRefreshNotifications(player, notifyTab);
   }
 
-  self.move = move;
   function move(emitter, args, socketid, fun) {
     var player = players[socketid];
     if (!player) return emitter('log',{message: 'No player for connection.'});
@@ -224,4 +235,19 @@ function MazeServer() {
       break;
     }
   }
+
+  function playerProps(emitter, args, socketid, fun) {
+    var player = players[socketid];
+    if (!player) return emitter('log',{message: 'No player for connection.'});
+    // Eventually we'll allow change of other props
+    var name = args.name;
+    if (name) {
+      player.name = name;
+      var props = {uid:player.uid, name:name};
+      forEachKnower(player, function(otherPlayer) {
+        otherPlayer.emitter('playerProps', {props:props});
+      });
+    }
+  }
+   
 }

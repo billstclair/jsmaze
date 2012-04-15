@@ -109,7 +109,14 @@ var jsClientMaze = {};
   function ClientMaze(mapOrMaze) {
     var self = this;
 
-    self.playerName = null;
+    var selfPlayer = {};
+    self.selfPlayer = function() {
+      return selfPlayer;
+    }
+    self.playerName = function(newName) {
+      if (newName) selfPlayer.name = newName;
+      return selfPlayer.name;
+    }
 
     var maze;
     if (mapOrMaze && mapOrMaze!=undefined) {
@@ -146,6 +153,23 @@ var jsClientMaze = {};
       }
       if (pos) maze.movePlayer(player, pos);
       if (dir) player.dir = dir;
+      draw3d();
+    }
+
+    self.playerProps = function(props, isSelf) {
+      var player;
+      if (isSelf) {
+        player = selfPlayer;
+      } else {
+        if (!props.uid) return;
+        player = maze.getPlayer(props.uid);
+        if (!player) return self.addPlayer(props);
+      }
+      for (var p in props) {
+        if (isSelf || p!='uid') {
+          player[p] = props[p];
+        }
+      }
       draw3d();
     }
 
@@ -391,10 +415,18 @@ var jsClientMaze = {};
         threeDCanvas(canvas);
         return;
       }
-      if (pos === undefined) pos = self.pos;
-      else self.pos = pos;
-      if (dir === undefined) dir = self.dir;
-      else self.dir = dir;
+      if (!pos) {
+        pos = self.pos;
+      } else {
+        self.pos = pos;
+        selfPlayer.pos = pos;
+      }
+      if (!dir) {
+        dir = self.dir;
+      } else {
+        self.dir = dir;
+        selfPlayer.dir = dir;
+      }
       
       if (!canvas) return;
 
@@ -540,9 +572,9 @@ var jsClientMaze = {};
       ctx.strokeStyle='black';
       ctx.stroke();
 
-      if (self.playerName) {
-        var pnh = 16;
-        drawPlayerName(ctx, self.playerName, pnh, left, top+1.5*pnh, width, height);
+      if (self.playerName()) {
+        var pnh = 18;
+        drawPlayerName(ctx, self.playerName(), pnh, left, top+1.5*pnh, width);
       }
 
       drawPlayers(ctx, playerStack, left, top, width, height);
@@ -709,7 +741,7 @@ var jsClientMaze = {};
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
-      drawPlayerName(ctx, player, dy, left, top, width, height);
+      drawPlayerName(ctx, player, dy, left, top, width);
     }
 
     function drawDefaultPlayer(ctx, player, side, left, top, width, height) {
@@ -806,14 +838,13 @@ var jsClientMaze = {};
       ctx.fillRect(left, top, width, height);
     }
 
-    function drawPlayerName(ctx, playerOrName, dy, left, top, width, height) {
+    function drawPlayerName(ctx, playerOrName, dy, left, top, width) {
       var name = playerOrName;
       if (typeof(name) != 'string') name = playerOrName.name;
       ctx.fillStyle = 'purple';
       ctx.font = Math.floor(dy) + 'px Arial';
       var textWidth = ctx.measureText(name).width;
       if (textWidth > width) textWidth = width;
-      //console.log(ctx.font, 'textWidth:', textWidth, 'dy:', dy, 'top:', top);
       ctx.fillText(name, left + width/2 - textWidth/2, top - dy/4, textWidth);
     }
 

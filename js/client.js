@@ -36,12 +36,13 @@ function Client() {
   function init() {
     evaluator = evalFactory.makeEvaluator();
     evaluator.register('setMaze', setMaze,
-                        'log', socketLog,
-                        'addPlayer', addPlayer,
-                        'setPlayerPos', setPlayerPos,
-                        'removePlayer', removePlayer,
-                        'moveto', moveto,
-                        'turn', turn);
+                       'playerProps', playerProps,
+                       'log', socketLog,
+                       'addPlayer', addPlayer,
+                       'setPlayerPos', setPlayerPos,
+                       'removePlayer', removePlayer,
+                       'moveto', moveto,
+                       'turn', turn);
   }
 
   function log(x) {
@@ -78,10 +79,16 @@ function Client() {
     }
   }
 
+  self.changeName = function(newName) {
+    maze.playerName(newName);
+    emitEval('playerProps', {name: newName});
+    maze.draw3d();
+  }
+
   function setMaze(socket, args) {
     var map = args.map;
     maze = new jsClientMaze.ClientMaze(map);
-    maze.playerName = playerName;
+    maze.playerName(playerName);
     maze.serverProxy(proxy);
     maze.draw3d(canvas3d);
     maze.topdraw(canvas);
@@ -93,15 +100,13 @@ function Client() {
 
   function moveto(socket, args) {
     maze.topdrawpos(true);
-    maze.pos = args.pos;
-    maze.draw3d();
+    maze.draw3d(null, args.pos);
     maze.topdrawpos();
   }
 
   function turn(socket, args) {
     maze.topdrawpos(true);
-    maze.dir = args.dir;
-    maze.draw3d();
+    maze.draw3d(null, null, args.dir);
     maze.topdrawpos();
   }
 
@@ -163,6 +168,12 @@ function Client() {
       return;
     }
     maze.setPlayerPos(uid, pos, dir);
+  }
+
+  function playerProps(socket, args) {
+    var props = args.props;
+    var isSelf = args.isSelf;
+    maze.playerProps(props, isSelf);
   }
 
 }

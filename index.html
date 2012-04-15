@@ -48,12 +48,16 @@ function getCookie(c_name) {
   }
 }
 
+function setPlayerNameCookie(playerName) {
+  setCookie('playerName', playerName, 180);
+}
+
 var playerName = null;
 function getPlayerName() {
   if (!playerName) playerName = getCookie('playerName');
   for (;!playerName;) {
     playerName = prompt("Enter a player nickname:", "");
-    setCookie('playerName', playerName, 180);
+    setPlayerNameCookie(playerName);
   }
   return playerName;
 }
@@ -84,12 +88,13 @@ function connect(button) {
 }
 
 function changeName() {
-  playerName = null;
-  setCookie('playerName', '');
-  client.disconnect();
-  var button = $('#connectButton');
-  $(button).val('Connect');
-  connect(button);
+  var newname = prompt('New player nickname:', playerName);
+  if (newname) {
+    playerName = newname;
+    setPlayerNameCookie(newname);
+    client.changeName(newname);
+  }
+  canvas3d.focus();
 }
 
 function localSetup(keepmaze, nodraw) {
