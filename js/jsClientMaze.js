@@ -109,6 +109,8 @@ var jsClientMaze = {};
   function ClientMaze(mapOrMaze) {
     var self = this;
 
+    self.playerName = null;
+
     var maze;
     if (mapOrMaze && mapOrMaze!=undefined) {
       if (mapOrMaze instanceof jsmaze.Maze) maze = mapOrMaze;
@@ -538,6 +540,11 @@ var jsClientMaze = {};
       ctx.strokeStyle='black';
       ctx.stroke();
 
+      if (self.playerName) {
+        var pnh = 16;
+        drawPlayerName(ctx, self.playerName, pnh, left, top+1.5*pnh, width, height);
+      }
+
       drawPlayers(ctx, playerStack, left, top, width, height);
     }
 
@@ -702,7 +709,7 @@ var jsClientMaze = {};
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
-      drawPlayerName(ctx, player, y, dy, left, top, width, height);
+      drawPlayerName(ctx, player, dy, left, top, width, height);
     }
 
     function drawDefaultPlayer(ctx, player, side, left, top, width, height) {
@@ -799,8 +806,9 @@ var jsClientMaze = {};
       ctx.fillRect(left, top, width, height);
     }
 
-    function drawPlayerName(ctx, player, y, dy, left, top, width, height) {
-      var name = player.name;
+    function drawPlayerName(ctx, playerOrName, dy, left, top, width, height) {
+      var name = playerOrName;
+      if (typeof(name) != 'string') name = playerOrName.name;
       ctx.fillStyle = 'purple';
       ctx.font = Math.floor(dy) + 'px Arial';
       var textWidth = ctx.measureText(name).width;

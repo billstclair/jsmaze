@@ -48,16 +48,19 @@ function Client() {
     console.log(x);
   }
 
+  var playerName = null;
+
   self.connect = connect;
   function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
     canvas3d = newCanvas3d;
     canvas = newCanvas;
     // The resource value here needs to be computed from the requesting URL
     socket = io.connect(serverURL, {'force new connection': true,
-                                     resource: resource});
+                                     Resource: resource});
     socket.on('eval', function(data) {
       evaluator.evaluate(socket.id, socket, data);  //, log);
     });
+    playerName = name;
     emitEval('getMaze', {name: name});
   }
 
@@ -78,6 +81,7 @@ function Client() {
   function setMaze(socket, args) {
     var map = args.map;
     maze = new jsClientMaze.ClientMaze(map);
+    maze.playerName = playerName;
     maze.serverProxy(proxy);
     maze.draw3d(canvas3d);
     maze.topdraw(canvas);
