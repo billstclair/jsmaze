@@ -137,6 +137,7 @@ function localSetup(keepmaze, nodraw) {
   </script>
   <title>jsMaze</title>
   <meta name='viewport' content='width=720'/>
+  <style>.chatbutton { font-size: 150%; }</style>
 </head>
 <body onload='start();'>
   <center>
@@ -151,7 +152,21 @@ function localSetup(keepmaze, nodraw) {
       <tr>
         <td>
           <center>
-            <canvas id='topview' width='300' height='300'></canvas>
+            <table>
+              <tr>
+                <td valign='top'>
+                  <button type='submit' class='chatbutton' onClick='chatPrompt()'>
+                    Chat
+                  </button>
+                </td>
+                <td><canvas id='topview' width='300' height='300'></canvas></td>
+                <td valign='top'>
+                  <button type='submit' class='chatbutton' onClick='chatPrompt()'>
+                    Chat
+                  </button>
+                </td>
+              </tr>
+            </table>
             <p>
               <input type='submit' id='connectButton' value='Connect'
                      onClick='connect(this)'/>
@@ -163,7 +178,7 @@ function localSetup(keepmaze, nodraw) {
             </p>
             <h2>jsMaze</h2>
             <p>To control with keyboard, click on 3d (upper) view.<br/>
-              Controls: WASD, IJKL, arrow keys. C to chat.<br>
+              Controls: WASD, IJKL, arrow keys. C or "Chat" button to chat.<br>
             On touch screens, tap and hold top, bottom, left, or right
               of 3d view.<br/>
             Middle section of 3d view can be used for drag, pinch, or

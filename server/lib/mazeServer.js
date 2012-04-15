@@ -251,18 +251,25 @@ function MazeServer() {
     }
   }
 
-  function forEachCouldSee(player, fun) {
+  function forEachCouldSee(player, fun, heretoo) {
     function each(dir) {
-      var pos = player.pos;
+      function doit(pos) {
+        var vis = maze.getPlayerMap(pos);
+        if (vis) {
+          for (var i=0; i<vis.length; i++) {
+            fun(vis[i]);            
+          }
+        }
+      }
+      var pos = {i: player.pos.i, j:player.pos.j};
+      if (heretoo) {
+        doit(pos);
+        heretoo = false;
+      }
       while (maze.canMoveForward(pos, dir)) {
         pos.i += dir.i;
         pos.j += dir.j;
-        var players = maze.getPlayerMap(pos);
-        if (players) {
-          for (var i=0; i<players.length; i++) {
-            fun(players[i]);            
-          }
-        }
+        doit(pos);
       }
     }
     each({i:0, j:1});
@@ -280,6 +287,7 @@ function MazeServer() {
     args = {name:name, msg:msg};
     forEachCouldSee(player, function(otherPlayer) {
       otherPlayer.emitter('chat', args);
-    });
+    },
+                   true);
   }
 }

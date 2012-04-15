@@ -9,7 +9,7 @@ flaky) at:
 The Git archive does NOT include required modules. To get them:
 
   cd /path/to/jsmaze   # or a parent directory. I use $HOME
-  npm socket.io express redis optimist
+  npm install socket.io express redis optimist
 
 To run the server:
 
