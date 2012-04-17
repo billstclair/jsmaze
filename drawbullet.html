@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <title>canvas.drawimage() test</title>
+    <script>
+  function drawit() {
+    var canvas = document.getElementById('draw');
+    var ctx = canvas.getContext("2d");
+    var canwidth = canvas.width;
+    var canheight = canvas.height;
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(canwidth-1,0);
+    ctx.lineTo(canwidth-1,canheight-1);
+    ctx.lineTo(0,canheight-1);
+    ctx.lineTo(0,0);
+    ctx.strokeStyle = 'black';
+    ctx.stroke();
+    ctx.fillStyle='lightblue';
+    ctx.fillRect(1,1,canwidth-2,canheight-2);
+
+    var destx;
+    var desty;
+    var image1 = new Image();
+    var image2 = new Image();
+    var image3 = new Image();
+    var image4 = new Image();
+
+    canwidth -= 2;
+    canheight -=2;
+
+    function drawimage(idx, image, left, top) {
+      console.log('drawing image', idx);
+      var imgwidth = image.width;
+      var imgheight = image.height;
+      var destwidth = canwidth/2;
+      var destheight = canheight/2;
+      if (imgwidth >= imgheight) {
+        var h = (imgheight/imgwidth) * destheight;
+        top += (destheight - h)/2;
+        destheight = h;
+      } else {
+        var w = (imgwidth/imgheight) * destwidth;
+        left += (destwidth - w)/2;
+        destwidth = w;
+      }
+      console.log('  imgwidth:',imgwidth,'imgheight:',imgheight);
+      console.log('  top:',top,'left:',left,'destwidth:',destwidth,'destheight:',destheight);
+      ctx.drawImage(image, left, top, destwidth, destheight);
+    };
+
+    image1.onload = function() { drawimage(1, image1, 1, 1); }
+    image2.onload = function() { drawimage(2, image2, canwidth/2, 1); }
+    image3.onload = function() { drawimage(3, image3, 1, canheight/2); }
+    image4.onload = function() { drawimage(4, image4, canwidth/2, canheight/2); }
+    image1.src = 'images/sys/bullet/bullet-left.gif';
+    image2.src = 'images/sys/bullet/bullet-right.gif';
+    image3.src = 'images/sys/bullet/bullet-front-1.gif';
+    image4.src = 'images/sys/bullet/bullet-rear-1.gif';
+  }
+    </script>
+  </head>
+  <body onload='drawit()'>
+    <center>
+      Here's a Canvas<br/>
+      <canvas id='draw' width='600' height='600' tabindex='1'></canvas>
+    </center>
+  </body>
+</html>
+
