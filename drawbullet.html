@@ -28,12 +28,18 @@
     canwidth -= 2;
     canheight -=2;
 
-    function drawimage(idx, image, left, top) {
+    function drawimage(idx, image, left, top, scale) {
       console.log('drawing image', idx);
       var imgwidth = image.width;
       var imgheight = image.height;
       var destwidth = canwidth/2;
       var destheight = canheight/2;
+      var w = destwidth*scale;
+      left += (destwidth-w)/2;
+      destwidth = w;
+      var h = destheight*scale;
+      top += (destheight-h)/2;
+      destheight = h;
       if (imgwidth >= imgheight) {
         var h = (imgheight/imgwidth) * destheight;
         top += (destheight - h)/2;
@@ -48,10 +54,11 @@
       ctx.drawImage(image, left, top, destwidth, destheight);
     };
 
-    image1.onload = function() { drawimage(1, image1, 1, 1); }
-    image2.onload = function() { drawimage(2, image2, canwidth/2, 1); }
-    image3.onload = function() { drawimage(3, image3, 1, canheight/2); }
-    image4.onload = function() { drawimage(4, image4, canwidth/2, canheight/2); }
+    var scale = 344/600;
+    image1.onload = function() { drawimage(1, image1, 1, 1, 1); }
+    image2.onload = function() { drawimage(2, image2, canwidth/2, 1, 1); }
+    image3.onload = function() { drawimage(3, image3, 1, canheight/2, scale); }
+    image4.onload = function() { drawimage(4, image4, canwidth/2, canheight/2, scale); }
     image1.src = 'images/sys/bullet/bullet-left.gif';
     image2.src = 'images/sys/bullet/bullet-right.gif';
     image3.src = 'images/sys/bullet/bullet-front-1.gif';
