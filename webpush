@@ -1,5 +1,5 @@
 #!/bin/bash
 
-rsyncit --exclude .htaccess --exclude .git -av *
+rsyncit --exclude-from rsyncignore -av *
 
 
