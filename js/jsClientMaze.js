@@ -860,6 +860,8 @@ var jsClientMaze = {};
       ctx.lineWidth = w;
     }
 
+    var loadCount = 0;
+
     function drawImagePlayer(ctx, player, s, side, left, top, width, height) {
       var image = player.images[side];
       if (!image) {
@@ -884,11 +886,14 @@ var jsClientMaze = {};
         setter = function(i) { arr[idx] = i; }
         image = arr[idx];
       }
+      var ldcnt = ++loadCount;
       if (typeof(image) == 'string') {
         var i = new Image();
         i.onload = function() {
           setter(i);
-          drawImage(ctx, i, player, left, top, width, height);
+          if (ldcnt == loadCount) {
+            drawImage(ctx, i, player, left, top, width, height);
+          }
         }
         i.src = image;
       } else {
