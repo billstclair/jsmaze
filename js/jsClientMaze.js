@@ -962,9 +962,14 @@ var jsClientMaze = {};
       }
     }
 
+    var touchTimeout = null;
+
     function do3dTouch(event, canvas) {
       if (event.type == 'touchend') {
-        self.touchingAction = false;
+        if (touchTimeout) {
+          touchTimeout(true);
+          touchTimeout = null;
+        }
         return;
       }
       var pos = eventPos(event);
@@ -980,17 +985,19 @@ var jsClientMaze = {};
       else if (y > canvas.height-h4) action = moveBack;
       else if (x <= w4) action = turnLeft;
       else if (x >= canvas.width-w4) action = turnRight;
-      var timeOut = 100;
-      if (action==turnLeft || action==turnRight) timeOut = 250;
+      var timeOut = 120;
+      if (action==turnLeft || action==turnRight) timeOut = 500;
       if (action) {
+        if (touchTimeout) touchTimeout(true);
         event.preventDefault();
-        self.touchingAction = action;
-        var tof = function() {
-          if (self.touchingAction) {
-            self.touchingAction();
+        var tof = function(clear) {
+          if (clear) action = null;
+          else if (action) {
+            action();
             window.setTimeout(tof, timeOut);
           }
         };
+        touchTimeout = tof;
         tof();
       }
     }
