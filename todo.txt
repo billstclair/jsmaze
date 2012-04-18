@@ -4,6 +4,7 @@ Bullets
     "Pacifist" setting makes unable to shoot and immune from bullets
       One problem: How to move a stubborn pacifist out of the way
   Score keeping
+  Gambling
 
 Sound
   Move, turn
