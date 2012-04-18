@@ -986,7 +986,12 @@ var jsClientMaze = {};
       else if (x <= w4) action = turnLeft;
       else if (x >= canvas.width-w4) action = turnRight;
       var timeOut = 120;
-      if (action==turnLeft || action==turnRight) timeOut = 500;
+      var initialTimeout = 250;
+      if (action==turnLeft || action==turnRight) {
+        timeOut = 500;
+        initialTimeout = null;
+      }
+      
       if (action) {
         if (touchTimeout) touchTimeout(true);
         event.preventDefault();
@@ -994,7 +999,8 @@ var jsClientMaze = {};
           if (clear) action = null;
           else if (action) {
             action();
-            window.setTimeout(tof, timeOut);
+            window.setTimeout(tof, initialTimeout || timeOut);
+            initialTimeout = 0;
           }
         };
         touchTimeout = tof;

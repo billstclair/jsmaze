@@ -17,6 +17,8 @@ Scrollback for chat
 Registration
   Track bandwidth and storage
   PayPal and Bitcoin interface
+    https://en.bitcoin.it/wiki/Bitcoind
+    https://github.com/jb55/node-bitcoin
 
 Player appearance.
   Upload right/left/front/back images.
