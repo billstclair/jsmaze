@@ -564,7 +564,7 @@ var jsClientMaze = {};
         i += di;
         j += dj;
         if (i<0 || i>width || j<0 || j>height) break;
-        playerStack.push({i:i,j:j,x:x,y:y,dx:dx,dy:dy});
+        playerStack.push({i:i,j:j,x:x,y:y,dx:dx,dy:dy,s:s});
         dx = dx * factor;
         dy = dy * factor;
       }
@@ -698,13 +698,14 @@ var jsClientMaze = {};
     // from back to front, so transparent regions let players behind
     // show through.
     function drawPlayers(ctx, playerStack, left, top, width, height) {
-      for (var s=0; s<playerStack.length; s++) {
-        var p = playerStack[s];
+      for (var idx=0; idx<playerStack.length; idx++) {
+        var p = playerStack[idx];
         if (!p) continue;
         var i = p.i;
         var j = p.j;
         var players = maze.getPlayerMap({i:i, j:j});
         if (!players) continue;
+        var s = p.s;
         var x = p.x;
         var y = p.y;
         var dx = p.dx;
@@ -712,12 +713,35 @@ var jsClientMaze = {};
         x += dx/2;
         y += dy/2;
         var player = players[players.length-1];
-        drawPlayer(ctx, player, x, y, dx/2, dy/2, left, top, width, height);
+        drawPlayer(ctx, player, s, x, y, dx/2, dy/2, left, top, width, height);
         return;
       }
     }
 
-    function drawPlayer(ctx, player, x, y, dx, dy, left, top, width, height) {
+    function fillBulletImages(player) {
+      if (player.name == 'Bullet') {
+        if (!player.images) {
+          var path = 'images/sys/bullet/'
+          player.images = {front:[path+'bullet-front-1.gif',
+                                  path+'bullet-front-2.gif',
+                                  path+'bullet-front-3.gif',
+                                  path+'bullet-front-4.gif'],
+                           left: path+'bullet-left.gif',
+                           back: [path+'bullet-rear-1.gif',
+                                  path+'bullet-rear-2.gif',
+                                  path+'bullet-rear-3.gif',
+                                  path+'bullet-rear-4.gif'],
+                           right: path+'bullet-right.gif'};
+          player.scales = {front: 344/600, back: 344/600};
+        }
+      } else {
+        delete player.images;
+        delete player.scales;
+      }
+    }
+
+    function drawPlayer(ctx, player, s, x, y, dx, dy, left, top, width, height) {
+      fillBulletImages(player);
       var name = player.name;
       y += dy;
       left += x;
@@ -743,9 +767,8 @@ var jsClientMaze = {};
          ((dir.i==pdir.i) ? 'back' : 'front'));
 
       if (player.images) {
-        drawImagePlayer(ctx, player, side, left, top, width, height);
-      }
-      else {
+        drawImagePlayer(ctx, player, s, side, left, top, width, height);
+      } else {
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
@@ -837,8 +860,56 @@ var jsClientMaze = {};
       ctx.lineWidth = w;
     }
 
-    // For now
-    var drawImagePlayer = drawDefaultPlayer;
+    function drawImagePlayer(ctx, player, s, side, left, top, width, height) {
+      var image = player.images[side];
+      if (!image) {
+        return drawDefaultPlayer(ctx, player, side, left, top, width, height);
+      }
+      var scales = player.scales;
+      var scale = null;
+      if (scales) scale = scales[side];
+      if (scale) {
+        var w = scale*width;
+        left += (width-w)/2;
+        width = w;
+        var h = scale*height;
+        top += (height-h)/2;
+        height = h;
+      }
+      var setter = function(i) { player.images[side] = i; }
+      if ($.isArray(image)) {
+        // Distance-sensitive images
+        var arr = image;
+        var idx = s % image.length;
+        setter = function(i) { arr[idx] = i; }
+        image = arr[idx];
+      }
+      if (typeof(image) == 'string') {
+        var i = new Image();
+        i.onload = function() {
+          setter(i);
+          drawImage(ctx, i, player, left, top, width, height);
+        }
+        i.src = image;
+      } else {
+        drawImage(ctx, image, player, left, top, width, height);
+      }
+    }
+
+    function drawImage(ctx, image, player, left, top, width, height) {
+      var w = image.width;
+      var h = image.height;
+      if (width/w <= height/h) {
+        var h = h * width/w;
+        top += (height - h) / 2;
+        height = h;
+      } else {
+        w = w * height/h;
+        top += (width - w) / 2;
+        width = w;
+      }
+      ctx.drawImage(image, left, top, width, height);
+    }
 
     // Not used
     function drawTrivialPlayer(ctx, player, side, left, top, width, height) {

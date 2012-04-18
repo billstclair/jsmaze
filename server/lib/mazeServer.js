@@ -197,7 +197,7 @@ function MazeServer() {
     removeCanSee(player);
     var notifyTab = whoCanSee(player.pos);
     maze.movePlayer(player, pos);
-    addCanSee(player, null);
+    addCanSee(player, true);
     notifyTab = whoCanSee(player.pos, notifyTab);
     if (player.emitter) player.emitter('moveto', {pos: pos});
     sendRefreshNotifications(player, notifyTab);
