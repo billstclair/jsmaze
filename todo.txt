@@ -36,3 +36,11 @@ Wall hangings.
 
 Objects
   Bot language
+  Forth-like, simple stack machine with words that operate on it.
+    Syntax: strings, numbers, .<property>, =<property>, '<word>
+    Words: {}, [], ref, set, +, -, *, /, %, ^,
+    do, def/end, if/else/elseif/end
+    this: current word, for (tail) recursion
+  Nested word-binding environment.
+  Libraries provided by users.
+  Primitives provided by jsMaze
