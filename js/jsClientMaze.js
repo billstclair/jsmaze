@@ -1000,7 +1000,7 @@ var jsClientMaze = {};
           else if (action) {
             action();
             window.setTimeout(tof, initialTimeout || timeOut);
-            initialTimeout = 0;
+            initialTimeout = null;
           }
         };
         touchTimeout = tof;

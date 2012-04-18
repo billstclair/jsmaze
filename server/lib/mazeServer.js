@@ -9,6 +9,7 @@
 //////////////////////////////////////////////////////////////////////
 
 var jsmaze = require('../shared/jsmaze.js');
+var bots = require('./bots.js');
 
 module.exports = new MazeServer();
 
@@ -74,7 +75,9 @@ function MazeServer() {
       var uid = knownPlayer.uid;
       if (knownPlayers[uid]) {
         delete player.knownPlayers[uid];
-        player.emitter('removePlayer', {uid: uid});
+        if (player.emitter) {
+          player.emitter('removePlayer', {uid: uid});
+        }
       }
     }
   }
@@ -106,16 +109,37 @@ function MazeServer() {
     if (player) {
       delete players[socketid];
       delete player.emitter;
-      removeCanSee(player);
-      var mazePlayers = maze.getPlayers();
-      for (var uid in mazePlayers) {
-        var otherPlayer = mazePlayers[uid];
-        if (otherPlayer != player) {
-          removeKnownPlayer(otherPlayer, player);
-        }
+      removePlayerFromTables(player);
+    }
+  }
+
+  self.removePlayerFromTables = removePlayerFromTables;
+  function removePlayerFromTables(player) {
+    removeCanSee(player);
+    var mazePlayers = maze.getPlayers();
+    for (var uid in mazePlayers) {
+      var otherPlayer = mazePlayers[uid];
+      if (otherPlayer != player) {
+        removeKnownPlayer(otherPlayer, player);
       }
-      maze.removePlayer(player);
-      clearKnownPlayers(player)
+    }
+    maze.removePlayer(player);
+    clearKnownPlayers(player)
+  }
+
+  self.killPlayer = killPlayer;
+  function killPlayer(player, killer, bullet) {
+    var maze = player.maze;
+    if (maze) {
+      var width = maze.width;
+      var height = maze.height;
+      var i = Math.floor(width*Math.random());
+      var j = Math.floor(width*Math.random());
+      doMove(player, {i:i, j:j});
+      // *** Update scores here ***
+      if (bullet) {
+        removePlayerFromTables(bullet);
+      }
     }
   }
 
@@ -186,7 +210,9 @@ function MazeServer() {
       var otherPlayer = notifyTab[key];
       if (isKnownPlayer(otherPlayer, player)) {
         var args = {uid:uid, pos:player.pos, dir:player.dir};
-        otherPlayer.emitter('setPlayerPos', args);
+        if (otherPlayer.emitter) {
+          otherPlayer.emitter('setPlayerPos', args);
+        }
       } else {
         addKnownPlayer(otherPlayer, player);
       }      
@@ -246,7 +272,9 @@ function MazeServer() {
       player.name = name;
       var props = {uid:player.uid, name:name};
       forEachKnower(player, function(otherPlayer) {
-        otherPlayer.emitter('playerProps', {props:props});
+        if (otherPlayer.emitter) {
+          otherPlayer.emitter('playerProps', {props:props});
+        }
       });
     }
   }
@@ -285,9 +313,12 @@ function MazeServer() {
     if (!msg) return;
     var name = player.name;
     args = {name:name, msg:msg};
-    forEachCouldSee(player, function(otherPlayer) {
-      otherPlayer.emitter('chat', args);
-    },
-                   true);
+    forEachCouldSee(player,
+                    function(otherPlayer) {
+                      if (otherPlayer.emitter) {
+                        otherPlayer.emitter('chat', args);
+                      }
+                    },
+                    true);
   }
 }

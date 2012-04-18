@@ -331,11 +331,15 @@ if (typeof exports === 'undefined') {
       self.uid = props.uid || makeUID();
       self.name = props.name || 'Random';
       self.images = props.images; // {front:<url>,back:<url>,left:<url>,right:<url>}
+      self.scales = props.scales; // {front:<f>,back:<b>,left:<l>,right:<r>}
       self.pos = props.pos || {i:0,j:0};
       self.dir = props.dir || {i:0,j:1};
       self.ghost = props.ghost; // true if can move through other players
       self.maze = props.maze;
-      self.stepfun = props.stepfun; // stepfun(player) updates player
+      self.script = props.script; // script(player) updates player
+      self.score = props.score;   // {kills:<num>,deaths:<num>}
+      self.pacifist = props.pacifist; // If true, can't shoot or be shot
+      self.isBullet = props.isBullet;
       if (self.maze) {
         self.maze.addPlayer(self);
       }
@@ -345,9 +349,12 @@ if (typeof exports === 'undefined') {
       return {uid: self.uid,
               name: self.name,
               images: self.images,
+              scales: self.scales,
+              score: self.score,
               pos: self.pos,
               dir: self.dir,
-              ghost: self.ghost};
+              ghost: self.ghost,
+              pacifist: self.pacifist};
     }
   }
 
