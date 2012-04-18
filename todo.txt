@@ -1,0 +1,35 @@
+Bullets
+  Robot scripts
+  UI - spacebar create "Bullet" player, with bot script
+    "Pacifist" setting makes unable to shoot and immune from bullets
+      One problem: How to move a stubborn pacifist out of the way
+  Score keeping
+
+Sound
+  Move, turn
+  Chat
+  Mention nick in chat
+
+Scrollback for chat
+  Web links
+
+Registration
+  Track bandwidth and storage
+  PayPal and Bitcoin interface
+
+Player appearance.
+  Upload right/left/front/back images.
+  Size limitation.
+
+Maze creation.
+  Access control
+  Bans
+  Age limitations
+  Pacifist maze
+
+Wall hangings.
+  walls[i][j].side (front, back, right, left)
+  transformation to do perspective on image
+
+Objects
+  Bot language

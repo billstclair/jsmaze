@@ -1,0 +1,14 @@
+# This turns an Apache server into a proxy for socket.io
+# There's a delay on first connection. Don't know why.
+# I'm not currently using this at jmaze.com.
+# node.js serves all of its web pages with Express.
+
+# Set some options.
+Options -Indexes
+Options +FollowSymLinks
+
+# Rewriting rules for the node.js server
+RewriteEngine on
+
+RewriteRule socket.io/(.*)$ http://%{HTTP_HOST}:6293/socket.io/$1 [P]
+RewriteRule socket.io$ http://%{HTTP_HOST}:6293/socket.io/ [P]
