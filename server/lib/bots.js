@@ -12,7 +12,7 @@ var jsmaze = require('../shared/jsmaze.js');
 
 exports.makeBullet = makeBullet;
 function makeBullet(player) {
-  var name = player.name + "'s Bullet";
+  var name = player.name + "'s bullet";
   var pos = {i:player.pos.i, j:player.pos.j};
   var dir = {i:player.dir.i, j:player.dir.j};
   var path = 'images/sys/bullet/'

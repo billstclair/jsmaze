@@ -1,9 +1,9 @@
 Bullets
-  Robot scripts
-  UI - spacebar create "Bullet" player, with bot script
-    "Pacifist" setting makes unable to shoot and immune from bullets
-      One problem: How to move a stubborn pacifist out of the way
-  Score keeping
+  No name on bullet
+  preload bullet images on client.
+    images:'bullet' to get preloaded images and scale
+  Draw players far to near, so can see player behind bullet
+  Score keeping - optional scorecard
   Gambling
 
 Sound
