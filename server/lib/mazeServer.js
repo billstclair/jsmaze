@@ -39,7 +39,8 @@ function MazeServer() {
                        'turnLeft', move,
                        'turnRight', move,
                        'playerProps', playerProps,
-                       'chat', chat);
+                       'chat', chat,
+                       'shoot', shoot);
   }
 
   function getmaze(emitter, args, socketid) {
@@ -115,6 +116,7 @@ function MazeServer() {
 
   self.removePlayerFromTables = removePlayerFromTables;
   function removePlayerFromTables(player) {
+    if (botTable[player.uid]) removeBot(player);
     removeCanSee(player);
     var mazePlayers = maze.getPlayers();
     for (var uid in mazePlayers) {
@@ -125,22 +127,6 @@ function MazeServer() {
     }
     maze.removePlayer(player);
     clearKnownPlayers(player)
-  }
-
-  self.killPlayer = killPlayer;
-  function killPlayer(player, killer, bullet) {
-    var maze = player.maze;
-    if (maze) {
-      var width = maze.width;
-      var height = maze.height;
-      var i = Math.floor(width*Math.random());
-      var j = Math.floor(width*Math.random());
-      doMove(player, {i:i, j:j});
-      // *** Update scores here ***
-      if (bullet) {
-        removePlayerFromTables(bullet);
-      }
-    }
   }
 
   var posstr = jsmaze.posstr;
@@ -219,6 +205,7 @@ function MazeServer() {
     }
   }
 
+  self.doMove = doMove;
   function doMove(player, pos) {
     removeCanSee(player);
     var notifyTab = whoCanSee(player.pos);
@@ -321,4 +308,117 @@ function MazeServer() {
                     },
                     true);
   }
+
+  var botTable = {};
+  var botCount = 0;
+
+  function addBot(bot) {
+    doMove(bot, bot.pos);
+    botTable[bot.uid] = bot;
+    if (botCount++ == 0) startBots();
+  }
+
+  function removeBot(bot) {
+    var uid = bot.uid;
+    if (botTable[uid]) {
+      delete botTable[uid];
+      if (--botCount <= 0) stopBots();
+    }
+  }
+
+  var botTimeoutID = null;
+  var botPeriod = 200;
+
+  function startBots() {
+    if (!botTimeoutID) {
+      botTimeoutID = setTimeout(botUpdate, botPeriod);
+    }
+  }
+
+  function botUpdate() {
+    // Will eventually need some time limits here
+    for (var uid in botTable) {
+      var bot = botTable[uid];
+      var script = bot.script;
+      if (script) {
+        script(self, bot);
+      }
+    }
+    // Maybe startBots should use setInterval(), but this is
+    // much less likely to saturate the server with bot updates.
+    botTimeoutID = setTimeout(botUpdate, botPeriod);
+  }
+
+  function stopBots() {
+    if (botTimeoutID) {
+      clearTimeout(botTimeoutID);
+      botTimeoutID = null;
+    }
+  }
+
+  function shoot(emitter, args, socketid, fun) {
+    var player = players[socketid];
+    if (!player) return emitter('log',{message: 'No player for connection.'});
+    var bullet = bots.makeBullet(player);
+    addBot(bullet);
+    console.log('Made bullet for player:', player.name);
+  }
+
+  self.killPlayer = killPlayer;
+  function killPlayer(player, killer, bullet) {
+    var maze = player.maze;
+    if (maze) {
+      var width = maze.width;
+      var height = maze.height;
+      var i = Math.floor(width*Math.random());
+      var j = Math.floor(height*Math.random());
+      if (i == width) i--;
+      if (j == height) j--;
+      doMove(player, {i:i, j:j});
+      updateScores(player, killer);
+      if (bullet) {
+        removePlayerFromTables(bullet);
+      }
+    }
+  }
+
+  function forEachUpdater(fun, args) {
+    return function(p) {
+      if (p.emitter) {
+        p.emitter(fun, args);
+      }
+    }
+  }
+
+  function updateScores(player, killer) {
+    var score = player.score;
+    if (score) {
+      score.deaths++;
+    } else {
+      score = {kills:0, deaths:1};
+      player.score = score;
+    }
+    if (player.emitter) {
+      player.emitter('playerProps', {isSelf: true, props:{score:score}});
+    }
+    var props = {uid: player.uid, score: score};
+    var args = {props: props};
+    updater = forEachUpdater('playerProps', args);
+    forEachKnower(player, updater);
+
+    score = killer.score;
+    if (score) {
+      score.kills++;
+    } else {
+      score = {kills: 1, deaths: 0};
+      killer.score = score;
+    }
+    if (killer.emitter) {
+      killer.emitter('playerProps', {isSelf: true, props:{score:score}});
+    }
+    props = {uid: killer.uid, score: score};
+    args.props = props;
+    forEachKnower(killer, updater);
+  }
+
 }

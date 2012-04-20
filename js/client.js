@@ -136,10 +136,15 @@ function Client() {
     emitEval('turnLeft');
   }
 
+  function shoot() {
+    emitEval('shoot');
+  }
+
   var proxy = {moveForward: moveForward,
-                moveBack: moveBack,
-                turnRight: turnRight,
-                turnLeft: turnLeft};
+               moveBack: moveBack,
+               turnRight: turnRight,
+               turnLeft: turnLeft,
+               shoot: shoot};
   self.proxy = proxy;
 
   // Other players

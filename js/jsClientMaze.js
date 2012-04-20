@@ -741,7 +741,7 @@ var jsClientMaze = {};
     }
 
     function drawPlayer(ctx, player, s, x, y, dx, dy, left, top, width, height) {
-      fillBulletImages(player);
+      //fillBulletImages(player);
       var name = player.name;
       y += dy;
       left += x;
@@ -891,7 +891,7 @@ var jsClientMaze = {};
         var i = new Image();
         i.onload = function() {
           setter(i);
-          if (ldcnt == loadCount) {
+          if (ldcnt==loadCount && player.maze) {
             drawImage(ctx, i, player, left, top, width, height);
           }
         }
@@ -1022,6 +1022,7 @@ var jsClientMaze = {};
       else if (key==65 || key==74 || key==37) turnLeft(); // AJ<
       else if (key==68 || key==76 || key==39) turnRight(); // DL>
       else if (key==67) chatPrompt();                      // C
+      else if (key==32) shoot();                           // spacebar
       else nodefault = false;
       if (nodefault) event.preventDefault();
     }
@@ -1102,6 +1103,11 @@ var jsClientMaze = {};
       chatMsg = name + ': ' + msg;
       draw3d();
     }
+
+    function shoot() {
+      if (_proxy) return _proxy.shoot();
+    }
+
   }
 
   // Necessary for browser compatibility

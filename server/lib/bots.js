@@ -12,7 +12,7 @@ var jsmaze = require('../shared/jsmaze.js');
 
 exports.makeBullet = makeBullet;
 function makeBullet(player) {
-  var name = player.name + ' Bullet';
+  var name = player.name + "'s Bullet";
   var pos = {i:player.pos.i, j:player.pos.j};
   var dir = {i:player.dir.i, j:player.dir.j};
   var path = 'images/sys/bullet/'
@@ -28,11 +28,11 @@ function makeBullet(player) {
                 right: path+'bullet-right.gif'};
   var scales = {front: 344/600, back: 344/600};
   var script = function(server, bullet) {
-    bulletScript(mazeServer, bullet, player);
+    bulletScript(server, bullet, player);
   };
   var maze = player.maze;
   return jsmaze.makePlayer({name:name,pos:pos,dir:dir,images:images,
-                            scale:scales,script:script,maze:maze,
+                            scales:scales,script:script,maze:maze,
                             isBullet: true});
 }
 
@@ -46,9 +46,16 @@ function bulletScript(server, bullet, player) {
   var dir = bullet.dir;
   if (maze.canMoveForward(pos, dir)) {
     var newpos = {i:pos.i+dir.i, j:pos.j+dir.j};
+    server.doMove(bullet, newpos);
     var list = maze.getPlayerMap(newpos);
     if (list) {
-      server.killPlayer(list[0], player, bullet);
+      for (var i=0; i<list.length; i++) {
+        var victim = list[i];
+        if (victim != bullet) {
+          server.killPlayer(victim, player, bullet);
+          return;
+        }
+      }
     }
   } else {
     server.removePlayerFromTables(bullet);

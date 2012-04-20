@@ -15,10 +15,15 @@ Scrollback for chat
   Web links
 
 Registration
+  Consider Riak instead of Redis
+    https://github.com/ha/doozerd
+    https://github.com/dannycoates/doozerjs
   Track bandwidth and storage
   PayPal and Bitcoin interface
     https://en.bitcoin.it/wiki/Bitcoind
     https://github.com/jb55/node-bitcoin
+    http://blog.james-carr.org/2010/07/24/payflow-pro-api-released-for-nodejs/
+    npm install payment-paypal-payflowpro
 
 Player appearance.
   Upload right/left/front/back images.
