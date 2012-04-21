@@ -254,6 +254,13 @@ var jsClientMaze = {};
           player[p] = props[p];
         }
       }
+      if (!(props.warring === undefined) || props.score) {
+        if (player.warring) {
+          scoreUpdate(isSelf ? null : player, player.score);
+        } else {
+          scoreUpdate(isSelf ? null : player, null);
+        }
+      }
       draw3d();
     }
 
@@ -669,7 +676,7 @@ var jsClientMaze = {};
                        left+width*0.05, top+height-0.25*pnh, 0.9*width);
       }
 
-      drawPlayers(ctx, playerStack, left, top, width, height);
+      drawPlayers(ctx, playerStack, selfPlayer.warring, left, top, width, height);
     }
 
     function drawWallRight(ctx, x, y, nextx, nexty, left, top, width, height) {
@@ -781,7 +788,7 @@ var jsClientMaze = {};
     // When I add images for players, need to draw all players,
     // from back to front, so transparent regions let players behind
     // show through.
-    function drawPlayers(ctx, playerStack, left, top, width, height) {
+    function drawPlayers(ctx, playerStack, warring, left, top, width, height) {
       for (var idx=playerStack.length-1; idx>=0; idx--) {
         var p = playerStack[idx];
         if (!p) continue;
@@ -798,14 +805,18 @@ var jsClientMaze = {};
         y += dy/2;
         var lastNameJdx = -1;
         var pcnt = players.length;
+        var player;
         for (var jdx=0; jdx<pcnt; jdx++) {
-          if (players[jdx].name) lastNameJdx = jdx;
+          player = players[jdx];
+          if (!warring==!player.warring && player.name) lastNameJdx = jdx;
         }
         for (var jdx=0; jdx<pcnt; jdx++) {
           var player = players[jdx];
-          var drawName = (jdx == lastNameJdx);
-          drawPlayer(ctx, player, drawName, s,
-                     x, y, dx/2, dy/2, left, top, width, height);
+          if (!warring == !player.warring) {
+            var drawName = (jdx == lastNameJdx);
+            drawPlayer(ctx, player, drawName, s,
+                       x, y, dx/2, dy/2, left, top, width, height);
+          }
         }
       }
     }
@@ -839,7 +850,7 @@ var jsClientMaze = {};
       if (player.images) {
         drawImagePlayer(ctx, player, s, side, left, top, width, height);
       } else {
-        drawDefaultPlayer(ctx, player, side, left, top, width, height);
+        drawDefaultPlayer(ctx, player, s, side, left, top, width, height);
       }
 
       if (drawName && player.name) {
@@ -847,7 +858,7 @@ var jsClientMaze = {};
       }
     }
 
-    function drawDefaultPlayer(ctx, player, side, left, top, width, height) {
+    function drawDefaultPlayer(ctx, player, s, side, left, top, width, height) {
       var bodyleft = left;
       var bodywidth = width;
       var lrdelta = 0.2*width;
@@ -864,7 +875,7 @@ var jsClientMaze = {};
       ctx.beginPath();
 
       var w = ctx.lineWidth;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = s>6 ? 1 : (s>1 ? 2 : 3);
       ctx.strokeStyle='blue';
 
       // Draw main rectangle
@@ -1176,12 +1187,22 @@ var jsClientMaze = {};
 
     var chatPromptFun = null;
     self.chatPromptFun = function(fun) {
-      if (fun) chatPromptFun = fun;
+      if (!(fun===undefined)) chatPromptFun = fun;
       return chatPromptFun;
     }
 
     function chatPrompt() {
       if (chatPromptFun) chatPromptFun(self);
+    }
+
+    var scoreUpdateFun = null;
+    self.scoreUpdateFun = function(fun) {
+      if (!(fun===undefined)) scoreUpdateFun = fun;
+      return scoreUpdateFun;      
+    }
+
+    function scoreUpdate(player, score) {
+      if (scoreUpdateFun) scoreUpdateFun(player, score);
     }
 
     var lastChatMsg = null;

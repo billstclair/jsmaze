@@ -1,5 +1,7 @@
 Bullets
   Score keeping - optional scorecard
+    Add scores to new player when entering game or warring mode
+    Remove scores for player when leaving game or warring mode
   Gambling
 
 Sound

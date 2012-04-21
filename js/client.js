@@ -52,6 +52,7 @@ function Client() {
 
   var playerName = null;
   self.chatPromptFun = null;
+  self.scoreUpdateFun = null;
 
   self.connect = connect;
   function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
@@ -91,6 +92,8 @@ function Client() {
     var map = args.map;
     maze = new jsClientMaze.ClientMaze(map);
     maze.chatPromptFun(self.chatPromptFun);
+    maze.scoreUpdateFun(self.scoreUpdateFun);
+
     maze.playerName(playerName);
     maze.serverProxy(proxy);
     maze.draw3d(canvas3d);
@@ -138,7 +141,18 @@ function Client() {
 
   self.shoot = shoot;
   function shoot() {
-    emitEval('shoot');
+    if (maze && maze.selfPlayer().warring) {
+      emitEval('shoot');
+    }
+  }
+
+  self.warring = warring;
+  function warring(newWarring) {
+    if (!(newWarring === undefined)) {
+      emitEval('warring', newWarring);
+    } else {
+      return maze.selfPlayer().warring;
+    }
   }
 
   var proxy = {moveForward: moveForward,

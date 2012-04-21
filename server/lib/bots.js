@@ -20,7 +20,8 @@ function makeBullet(player) {
   };
   var maze = player.maze;
   return jsmaze.makePlayer({name:name, pos:pos, dir:dir, images:'bullet',
-                            script:script, maze:maze, isBullet:true});
+                            script:script, maze:maze, isBullet:true,
+                            warring:true});
 }
 
 function bulletScript(server, bullet, player) {
@@ -38,7 +39,7 @@ function bulletScript(server, bullet, player) {
     if (list) {
       for (var i=0; i<list.length; i++) {
         var victim = list[i];
-        if (victim != bullet) {
+        if (victim != bullet && victim.warring) {
           server.killPlayer(victim, player, bullet);
           return;
         }

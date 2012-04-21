@@ -1,5 +1,6 @@
 <html>
 <head>
+  <link rel='stylesheet' type='text/css' href='css/tables.css'>
   <script src='js/jquery.min.js'></script>
   <script src='socket.io/socket.io.js'></script>
   <script src='server/shared/jsmaze.js'></script>
@@ -24,6 +25,9 @@ function getResource() {
 }
 
 function start() {
+  $('#scoreTable').hide();
+  $('#shoot1Span').hide();
+  $('#shoot2Span').hide();
   localSetup(false, true);
   connect($('#connectButton')[0]);
 }
@@ -69,6 +73,7 @@ function connect(button) {
     maze.threeDCanvas(null);
     try {
       client.chatPromptFun = chatPrompt;
+      client.scoreUpdateFun = scoreUpdate;
       client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
@@ -103,8 +108,73 @@ function chatPrompt() {
   client.chat(msg);
 }
 
+function toggleWar() {
+  if ($('#war1').text().trim() == 'War') {
+    $('#war1').text('Peace');
+    $('#war2').text('Peace');
+    $('#shoot1Span').show();
+    $('#shoot2Span').show();
+    $('#scoreTable').show();
+    client.warring(true);
+    canvas3d.focus();
+  } else {
+    $('#war1').text('War');
+    $('#war2').text('War');
+    $('#shoot1Span').hide();
+    $('#shoot2Span').hide();
+    $('#scoreTable').hide();
+    client.warring(false);
+    canvas3d.focus();
+  }
+}
+
 function shoot() {
   client.shoot();
+}
+
+var scores = {};
+var selfScore = null;
+function scoreUpdate(player, score) {
+  if (player == null) selfScore = score;
+  else if (score == null) delete scores(player.uid);
+  else scores[player.uid] = {name: player.name, score: score};
+  var arr = [];
+  for (uid in scores) {
+    var player = scores[uid];
+    var name = player.name;
+    if (name) arr.push({name:name, score:player.score});
+  }
+  arr.sort(function(a, b) {
+    var aname = a.name;
+    var bname = b.name;
+    return a>b ? 1 : (a==b ? 0 : -1);
+  });
+  var table = $('#scoreTable')[0];
+  while (table.rows.length > 1) {
+    table.deleteRow(1);
+  }
+  if (selfScore) {
+    var row = table.insertRow(-1);
+    $(row.insertCell(0)).text('You');
+    var col = row.insertCell(1);
+    $(col).text(selfScore.kills);
+    $(col).attr('class', 'number');
+    col = row.insertCell(2);
+    $(col).text(selfScore.deaths);
+    $(col).attr('class', 'number');
+  }
+  for (var i=0; i<arr.length; i++) {
+    var player = arr[i];
+    var score = player.score;
+    var row = table.insertRow(-1);
+    $(row.insertCell(0)).text(player.name);
+    var col = row.insertCell(1);
+    $(col).text(selfScore.kills);
+    $(col).attr('class', 'number');
+    col = row.insertCell(2);
+    $(col).text(selfScore.deaths);
+    $(col).attr('class', 'number');
+  }
 }
 
 function localSetup(keepmaze, nodraw) {
@@ -159,22 +229,47 @@ function localSetup(keepmaze, nodraw) {
             <table>
               <tr>
                 <td valign='top' align='center'>
+                  <span id='shoot1Span'>
+                    <button type='submit' class='chatbutton' onClick='shoot()'>
+                      Shoot
+                    </button>
+                    <br/><br/>
+                  </span>
                   <button type='submit' class='chatbutton' onClick='chatPrompt()'>
                     Chat
                   </button>
                   <br/><br/>
-                  <button type='submit' class='chatbutton' onClick='shoot()'>
-                    Shoot
+                  <button id='war1' type='submit' class='chatbutton'
+                          onClick='toggleWar()'>
+                    War
                   </button>
                 </td>
-                <td><canvas id='topview' width='300' height='300'></canvas></td>
+                <td>
+                  <center>
+                    <table id='scoreTable' class='prettytable'>
+                      <tr>
+                        <th>Name</th>
+                        <th>Kills</th>
+                        <th>Deaths</th>
+                      </tr>
+                    </table>
+                  </center>
+                  <canvas id='topview' width='300' height='300'></canvas>
+                </td>
                 <td valign='top' align='center'>
+                  <span id='shoot2Span'>
+                    <button type='submit' class='chatbutton' onClick='shoot()'>
+                      Shoot
+                    </button>
+                    <br/><br/>
+                  </span>
                   <button type='submit' class='chatbutton' onClick='chatPrompt()'>
                     Chat
                   </button>
                   <br/><br/>
-                  <button type='submit' class='chatbutton' onClick='shoot()'>
-                    Shoot
+                  <button id='war2' type='submit' class='chatbutton'
+                          onClick='toggleWar()'>
+                    War
                   </button>
                 </td>
               </tr>

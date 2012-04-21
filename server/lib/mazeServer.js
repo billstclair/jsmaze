@@ -40,7 +40,8 @@ function MazeServer() {
                        'turnRight', move,
                        'playerProps', playerProps,
                        'chat', chat,
-                       'shoot', shoot);
+                       'shoot', shoot,
+                       'warring', warring);
   }
 
   function getmaze(emitter, args, socketid) {
@@ -228,9 +229,15 @@ function MazeServer() {
     sendRefreshNotifications(player, notifyTab);
   }
 
-  function move(emitter, args, socketid, fun) {
+  function getPlayerOrWarn(socketid) {
     var player = players[socketid];
-    if (!player) return emitter('log',{message: 'No player for connection.'});
+    if (!player) emitter('log', {message: 'No player for connection.'});
+    return player;
+  }
+
+  function move(emitter, args, socketid, fun) {
+    var player = getPlayerOrWarn(socketid);
+    if (!player) return;
     var pos = player.pos;
     var dir = player.dir;
     switch(fun) {
@@ -254,8 +261,8 @@ function MazeServer() {
   }
 
   function playerProps(emitter, args, socketid, fun) {
-    var player = players[socketid];
-    if (!player) return emitter('log',{message: 'No player for connection.'});
+    var player = getPlayerOrWarn(socketid);
+    if (!player) return;
     // Eventually we'll allow change of other props
     var name = args.name;
     if (name) {
@@ -297,8 +304,8 @@ function MazeServer() {
   }
 
   function chat(emitter, args, socketid, fun) {
-    var player = players[socketid];
-    if (!player) return emitter('log',{message: 'No player for connection.'});
+    var player = getPlayerOrWarn(socketid);
+    if (!player) return;
     var msg = args.msg;
     if (!msg) return;
     var name = player.name;
@@ -359,9 +366,25 @@ function MazeServer() {
     }
   }
 
+  function warring(emitter, args, socketid, fun) {
+    var player = getPlayerOrWarn(socketid);
+    if (!player) return;
+    var warring = args;
+    if (!args == !player.warring) return;
+    player.warring = args;
+    if (player.emitter) {
+      player.emitter('playerProps', {isSelf: true, props:{warring:warring}});
+    }
+    var props = {uid:player.uid, warring:warring};
+    var args = {props:props};
+    var updater = forEachUpdater('playerProps', args);
+    forEachKnower(player, updater);    
+  }
+
   function shoot(emitter, args, socketid, fun) {
-    var player = players[socketid];
-    if (!player) return emitter('log',{message: 'No player for connection.'});
+    var player = getPlayerOrWarn(socketid);
+    if (!player) return;
+    if (!player.warring) return;
     var bullet = bots.makeBullet(player);
     addBot(bullet);
     console.log('Made bullet for player:', player.name);
