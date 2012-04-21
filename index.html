@@ -103,6 +103,10 @@ function chatPrompt() {
   client.chat(msg);
 }
 
+function shoot() {
+  client.shoot();
+}
+
 function localSetup(keepmaze, nodraw) {
 // Alternating horizontal and vertical wals
   var map = ["----------",
@@ -154,15 +158,23 @@ function localSetup(keepmaze, nodraw) {
           <center>
             <table>
               <tr>
-                <td valign='top'>
+                <td valign='top' align='center'>
                   <button type='submit' class='chatbutton' onClick='chatPrompt()'>
                     Chat
                   </button>
+                  <br/><br/>
+                  <button type='submit' class='chatbutton' onClick='shoot()'>
+                    Shoot
+                  </button>
                 </td>
                 <td><canvas id='topview' width='300' height='300'></canvas></td>
-                <td valign='top'>
+                <td valign='top' align='center'>
                   <button type='submit' class='chatbutton' onClick='chatPrompt()'>
                     Chat
+                  </button>
+                  <br/><br/>
+                  <button type='submit' class='chatbutton' onClick='shoot()'>
+                    Shoot
                   </button>
                 </td>
               </tr>

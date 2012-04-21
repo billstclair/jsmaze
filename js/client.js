@@ -136,6 +136,7 @@ function Client() {
     emitEval('turnLeft');
   }
 
+  self.shoot = shoot;
   function shoot() {
     emitEval('shoot');
   }

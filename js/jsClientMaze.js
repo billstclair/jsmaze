@@ -1176,6 +1176,7 @@ var jsClientMaze = {};
       draw3d();
     }
 
+    self.shoot = shoot;
     function shoot() {
       if (_proxy) return _proxy.shoot();
     }
