@@ -796,13 +796,22 @@ var jsClientMaze = {};
         var dy = p.dy;
         x += dx/2;
         y += dy/2;
-        // Should loop through these, drawing the name of only the last one
-        var player = players[players.length-1];
-        drawPlayer(ctx, player, s, x, y, dx/2, dy/2, left, top, width, height);
+        var lastNameJdx = -1;
+        var pcnt = players.length;
+        for (var jdx=0; jdx<pcnt; jdx++) {
+          if (players[jdx].name) lastNameJdx = jdx;
+        }
+        for (var jdx=0; jdx<pcnt; jdx++) {
+          var player = players[jdx];
+          var drawName = (jdx == lastNameJdx);
+          drawPlayer(ctx, player, drawName, s,
+                     x, y, dx/2, dy/2, left, top, width, height);
+        }
       }
     }
 
-    function drawPlayer(ctx, player, s, x, y, dx, dy, left, top, width, height) {
+    function drawPlayer(ctx, player, drawName, s,
+                        x, y, dx, dy, left, top, width, height) {
       var name = player.name;
       y += dy;
       left += x;
@@ -833,7 +842,7 @@ var jsClientMaze = {};
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
-      if (player.name) {
+      if (drawName && player.name) {
         drawPlayerName(ctx, player, dy, left, top, width);
       }
     }
