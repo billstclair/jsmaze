@@ -97,7 +97,7 @@ function MazeServer() {
     var uid = player.uid;
     for (var socketid in players) {
       p = players[socketid];
-      if (p!=player && p.knownPlayers[uid]) {
+      if (p!=player && p.knownPlayers && p.knownPlayers[uid]) {
         fun(p);
         break;
       }
@@ -213,6 +213,9 @@ function MazeServer() {
     addCanSee(player, true);
     notifyTab = whoCanSee(player.pos, notifyTab);
     if (player.emitter) player.emitter('moveto', {pos: pos});
+    forEachKnower(player, function(otherPlayer) {
+      notifyTab[otherPlayer.uid] = otherPlayer;
+    });
     sendRefreshNotifications(player, notifyTab);
   }
 
@@ -327,7 +330,7 @@ function MazeServer() {
   }
 
   var botTimeoutID = null;
-  var botPeriod = 200;
+  var botPeriod = 100;
 
   function startBots() {
     if (!botTimeoutID) {

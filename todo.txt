@@ -1,8 +1,4 @@
 Bullets
-  No name on bullet
-  preload bullet images on client.
-    images:'bullet' to get preloaded images and scale
-  Draw players far to near, so can see player behind bullet
   Score keeping - optional scorecard
   Gambling
 
@@ -10,6 +6,8 @@ Sound
   Move, turn
   Chat
   Mention nick in chat
+  Bullets
+  Death
 
 Scrollback for chat
   Web links

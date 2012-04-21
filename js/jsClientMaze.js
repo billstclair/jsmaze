@@ -130,8 +130,92 @@ var jsClientMaze = {};
       return maze;
     }
 
+    var builtinImages = {};
+    this.builtinImages = builtinImages;
+    function initBuiltinImages() {
+      var path = 'images/sys/bullet/'
+      var bulletImages = {front:[path+'bullet-front-1.gif',
+                                 path+'bullet-front-2.gif',
+                                 path+'bullet-front-3.gif',
+                                 path+'bullet-front-4.gif'],
+                          left: path+'bullet-left.gif',
+                          back: [path+'bullet-rear-1.gif',
+                                 path+'bullet-rear-2.gif',
+                                 path+'bullet-rear-3.gif',
+                                 path+'bullet-rear-4.gif'],
+                          right: path+'bullet-right.gif'};
+      builtinImages.bullet = {images: bulletImages,
+                              scales: {front: 344/600, back: 344/600}};
+      preloadImages({images: bulletImages});
+    }
+    initBuiltinImages();
+
+    function replaceBuiltinImages(player) {
+      var name = player.images;
+      if (typeof(name) == 'string')  {
+        tab = builtinImages[name];
+        if (tab) {
+          player.images = tab.images;
+          player.scales = tab.scales;
+        } else {
+          console.log('No builtinImages for:', name);
+          delete player.images;
+        }
+      }
+    }
+
+    function newImage(url, setter) {
+      if (typeof(url) != 'string') return;
+      var newonload = function(image, setter) {
+        return function() {
+          setter(image);
+        };
+      };
+      var image = new Image();
+      image.onload = newonload(image, setter);
+      image.src = url;
+      return image;
+    }
+
+    function preloadImageArray(urls) {
+      function newSetter(ii) {
+        return function(image) {
+          urls[ii] = image;
+        };
+      }
+      for (var i=0; i<urls.length; i++) {
+        url = urls[i];
+        newImage(url, newSetter(i));
+      }
+    }
+
+    function preloadImageProp(images, prop, url) {
+      var setter = function(image) {
+        images[prop] = image;
+      };
+      newImage(url, setter);
+    }
+
+    function preloadImages(player) {
+      replaceBuiltinImages(player);
+      var images = player.images;
+      if (images) {
+        for (side in images) {
+          var url = images[side];
+          // Don't be tempted to inline preloadImageArray or preloadImageProp
+          // Need the new vars they provide to close over.
+          if ($.isArray(url)) {
+            preloadImageArray(url);
+          } else {
+            preloadImageProp(images, side, url);
+          }
+        }
+      }
+    }
+
     self.addPlayer = function(props) {
       var player = jsmaze.makePlayer(props);
+      preloadImages(player);
       maze.addPlayer(player);
       draw3d();
     }
@@ -698,7 +782,7 @@ var jsClientMaze = {};
     // from back to front, so transparent regions let players behind
     // show through.
     function drawPlayers(ctx, playerStack, left, top, width, height) {
-      for (var idx=0; idx<playerStack.length; idx++) {
+      for (var idx=playerStack.length-1; idx>=0; idx--) {
         var p = playerStack[idx];
         if (!p) continue;
         var i = p.i;
@@ -712,36 +796,13 @@ var jsClientMaze = {};
         var dy = p.dy;
         x += dx/2;
         y += dy/2;
+        // Should loop through these, drawing the name of only the last one
         var player = players[players.length-1];
         drawPlayer(ctx, player, s, x, y, dx/2, dy/2, left, top, width, height);
-        return;
-      }
-    }
-
-    function fillBulletImages(player) {
-      if (player.name == 'Bullet') {
-        if (!player.images) {
-          var path = 'images/sys/bullet/'
-          player.images = {front:[path+'bullet-front-1.gif',
-                                  path+'bullet-front-2.gif',
-                                  path+'bullet-front-3.gif',
-                                  path+'bullet-front-4.gif'],
-                           left: path+'bullet-left.gif',
-                           back: [path+'bullet-rear-1.gif',
-                                  path+'bullet-rear-2.gif',
-                                  path+'bullet-rear-3.gif',
-                                  path+'bullet-rear-4.gif'],
-                           right: path+'bullet-right.gif'};
-          player.scales = {front: 344/600, back: 344/600};
-        }
-      } else {
-        delete player.images;
-        delete player.scales;
       }
     }
 
     function drawPlayer(ctx, player, s, x, y, dx, dy, left, top, width, height) {
-      //fillBulletImages(player);
       var name = player.name;
       y += dy;
       left += x;
@@ -772,7 +833,9 @@ var jsClientMaze = {};
         drawDefaultPlayer(ctx, player, side, left, top, width, height);
       }
 
-      drawPlayerName(ctx, player, dy, left, top, width);
+      if (player.name) {
+        drawPlayerName(ctx, player, dy, left, top, width);
+      }
     }
 
     function drawDefaultPlayer(ctx, player, side, left, top, width, height) {

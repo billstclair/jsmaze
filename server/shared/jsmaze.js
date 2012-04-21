@@ -329,7 +329,7 @@ if (typeof exports === 'undefined') {
     function init(props) {
       if (!props) props = {};
       self.uid = props.uid || makeUID();
-      self.name = props.name || 'Random';
+      self.name = props.name;
       self.images = props.images; // {front:<url>,back:<url>,left:<url>,right:<url>}
       self.scales = props.scales; // {front:<f>,back:<b>,left:<l>,right:<r>}
       self.pos = props.pos || {i:0,j:0};
