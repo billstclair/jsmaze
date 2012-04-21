@@ -879,12 +879,18 @@ var jsClientMaze = {};
       var nosebot = 0.6*height;
       var earmid = 0.4*height;
       var earleft = 0.35*bodywidth;
+      var eyetop = 0.2*height;
+      var eyebot = 0.33*height;
+      var eyemid = (eyetop+eyebot) / 2
+      var eyeleft = 0.15 * bodywidth;
+      var eyeright = 0.25 * bodywidth;
+      var eyeballx = eyeleft + (eyeright-eyeleft)/4
+      var eyeballtop = eyetop + (eyebot-eyetop)/6;
+      var eyeballbot = eyebot - (eyebot-eyetop)/6;
       if (side == 'front') {
         var eyemid = 0.3*width;
         var eyewid = 0.2*width;
         var eyeleft = eyemid - eyewid/2;
-        var eyetop = 0.2*height;
-        var eyebot = 0.33*height;
         ctx.moveTo(left+eyeleft, top+eyebot);
         ctx.lineTo(left+eyemid, top+eyetop);
         ctx.lineTo(left+eyeleft+eyewid, top+eyebot);
@@ -915,6 +921,11 @@ var jsClientMaze = {};
         ctx.lineTo(bodyleft+bodywidth-earleft, top+nosetop);
         ctx.lineTo(bodyleft+bodywidth-earleft, top+earmid);
         ctx.lineTo(bodyleft+bodywidth/2, top+nosebot);
+        ctx.moveTo(bodyleft+eyeleft, top+eyetop);
+        ctx.lineTo(bodyleft+eyeright, top+eyemid);
+        ctx.lineTo(bodyleft+eyeleft, top+eyebot);
+        ctx.moveTo(bodyleft+eyeballx, top+eyeballtop);
+        ctx.lineTo(bodyleft+eyeballx, top+eyeballbot);
       } else if (side == 'right') {
         ctx.moveTo(left+bodywidth, top+nosetop);
         ctx.lineTo(left+width, top+nosebot);
@@ -926,6 +937,11 @@ var jsClientMaze = {};
         ctx.lineTo(bodyleft+earleft, top+nosetop);
         ctx.lineTo(bodyleft+earleft, top+earmid);
         ctx.lineTo(bodyleft+bodywidth/2, top+nosebot);
+        ctx.moveTo(bodyleft+bodywidth-eyeleft, top+eyetop);
+        ctx.lineTo(bodyleft+bodywidth-eyeright, top+eyemid);
+        ctx.lineTo(bodyleft+bodywidth-eyeleft, top+eyebot);
+        ctx.moveTo(bodyleft+bodywidth-eyeballx, top+eyeballtop);
+        ctx.lineTo(bodyleft+bodywidth-eyeballx, top+eyeballbot);
       }
 
       ctx.stroke();

@@ -338,8 +338,9 @@ if (typeof exports === 'undefined') {
       self.maze = props.maze;
       self.script = props.script; // script(player) updates player
       self.score = props.score;   // {kills:<num>,deaths:<num>}
-      self.pacifist = props.pacifist; // If true, can't shoot or be shot
-      self.isBullet = props.isBullet;
+      self.warring = props.warring; // Warring & non-warring players can't see
+                                    // each other.
+      self.isbot = !self.script;
       if (self.maze) {
         self.maze.addPlayer(self);
       }
@@ -354,7 +355,8 @@ if (typeof exports === 'undefined') {
               pos: self.pos,
               dir: self.dir,
               ghost: self.ghost,
-              pacifist: self.pacifist};
+              warring: self.warring,
+              isbot: self.isbot};
     }
   }
 
