@@ -227,6 +227,7 @@ var jsClientMaze = {};
         console.log('removePlayer, no player for uid:', uid);
         return;
       }
+      player.warring = false;
       updatePropsScores(player, {warring: false}, false);
       maze.removePlayer(player);
       draw3d();
