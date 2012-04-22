@@ -60,6 +60,7 @@ function MazeServer() {
   }
 
   function addKnownPlayer(player, knownPlayer) {
+    if (!player.warring != !knownPlayer.warring) return;
     if (!player.knownPlayers) player.knownPlayers = {};
     player.knownPlayers[knownPlayer.uid] = knownPlayer;
     if (player.emitter) {
@@ -86,21 +87,21 @@ function MazeServer() {
 
   function clearKnownPlayers(player) {
     var known = player.knownPlayers;
-    delete player.knownPlayers;
     if (known) {
+      delete player.knownPlayers;
       for (var uid in known) {
         removeKnownPlayer(known[uid], player);
       }
     }
   }
 
+  self.forEachKnower = forEachKnower;
   function forEachKnower(player, fun) {
     var uid = player.uid;
     for (var socketid in players) {
-      p = players[socketid];
+      var p = players[socketid];
       if (p!=player && p.knownPlayers && p.knownPlayers[uid]) {
         fun(p);
-        break;
       }
     }
   }
@@ -229,14 +230,14 @@ function MazeServer() {
     sendRefreshNotifications(player, notifyTab);
   }
 
-  function getPlayerOrWarn(socketid) {
+  function getPlayerOrWarn(socketid, emitter) {
     var player = players[socketid];
     if (!player) emitter('log', {message: 'No player for connection.'});
     return player;
   }
 
   function move(emitter, args, socketid, fun) {
-    var player = getPlayerOrWarn(socketid);
+    var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
     var pos = player.pos;
     var dir = player.dir;
@@ -261,7 +262,7 @@ function MazeServer() {
   }
 
   function playerProps(emitter, args, socketid, fun) {
-    var player = getPlayerOrWarn(socketid);
+    var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
     // Eventually we'll allow change of other props
     var name = args.name;
@@ -304,7 +305,7 @@ function MazeServer() {
   }
 
   function chat(emitter, args, socketid, fun) {
-    var player = getPlayerOrWarn(socketid);
+    var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
     var msg = args.msg;
     if (!msg) return;
@@ -367,22 +368,23 @@ function MazeServer() {
   }
 
   function warring(emitter, args, socketid, fun) {
-    var player = getPlayerOrWarn(socketid);
+    var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
     var warring = args;
-    if (!args == !player.warring) return;
-    player.warring = args;
+    if (!warring == !player.warring) return;
+    player.warring = warring;
     if (player.emitter) {
       player.emitter('playerProps', {isSelf: true, props:{warring:warring}});
     }
     var props = {uid:player.uid, warring:warring};
     var args = {props:props};
     var updater = forEachUpdater('playerProps', args);
-    forEachKnower(player, updater);    
+    forEachKnower(player, updater);
+    addCanSee(player, true);
   }
 
   function shoot(emitter, args, socketid, fun) {
-    var player = getPlayerOrWarn(socketid);
+    var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
     if (!player.warring) return;
     var bullet = bots.makeBullet(player);

@@ -77,20 +77,34 @@ function connect(button) {
       client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
-      $('#changeName').attr('disabled', null);
+      enableButtons(true);
     } catch(err) {
       alert('Error connecting with server: ' + err);
       localSetup(true);
     }
   } else {
+    if ($('#war1').text().trim() == 'Peace') toggleWar();
+    scores = {};
     try {
       client.disconnect();
     } catch(err) {
     }
     $(button).val('Connect');
-    $('#changeName').attr('disabled', 'disabled');
+    enableButtons(false);
     localSetup(true);
   }
+}
+
+function enableButtons(enabled) {
+  var disabled = enabled ? null : 'disabled';
+  function doit(id) {
+    $('#'+id).attr('disabled', disabled);
+  }
+  doit('changeName');
+  doit('chat1');
+  doit('chat2');
+  doit('war1');
+  doit('war2')
 }
 
 function changeName() {
@@ -135,8 +149,9 @@ function shoot() {
 var scores = {};
 var selfScore = null;
 function scoreUpdate(player, score) {
+  console.log('scoreUpdate, player:', player, ', score:', score);i
   if (player == null) selfScore = score;
-  else if (score == null) delete scores(player.uid);
+  else if (score === null) delete scores[player.uid];
   else scores[player.uid] = {name: player.name, score: score};
   var arr = [];
   for (uid in scores) {
@@ -153,26 +168,26 @@ function scoreUpdate(player, score) {
   while (table.rows.length > 1) {
     table.deleteRow(1);
   }
-  if (selfScore) {
-    var row = table.insertRow(-1);
-    $(row.insertCell(0)).text('You');
-    var col = row.insertCell(1);
-    $(col).text(selfScore.kills);
-    $(col).attr('class', 'number');
-    col = row.insertCell(2);
-    $(col).text(selfScore.deaths);
-    $(col).attr('class', 'number');
-  }
+
+  var row = table.insertRow(-1);
+  $(row.insertCell(0)).text('You');
+  var col = row.insertCell(1);
+  $(col).text(selfScore ? selfScore.kills : '0');
+  $(col).attr('class', 'number');
+  col = row.insertCell(2);
+  $(col).text(selfScore ? selfScore.deaths : '0');
+  $(col).attr('class', 'number');
+
   for (var i=0; i<arr.length; i++) {
     var player = arr[i];
     var score = player.score;
     var row = table.insertRow(-1);
     $(row.insertCell(0)).text(player.name);
     var col = row.insertCell(1);
-    $(col).text(selfScore.kills);
+    $(col).text(score ? score.kills : '0');
     $(col).attr('class', 'number');
     col = row.insertCell(2);
-    $(col).text(selfScore.deaths);
+    $(col).text(score ? score.deaths : '0');
     $(col).attr('class', 'number');
   }
 }
@@ -235,7 +250,8 @@ function localSetup(keepmaze, nodraw) {
                     </button>
                     <br/><br/>
                   </span>
-                  <button type='submit' class='chatbutton' onClick='chatPrompt()'>
+                  <button id='chat1' type='submit' class='chatbutton'
+                          onClick='chatPrompt()'>
                     Chat
                   </button>
                   <br/><br/>
@@ -263,7 +279,8 @@ function localSetup(keepmaze, nodraw) {
                     </button>
                     <br/><br/>
                   </span>
-                  <button type='submit' class='chatbutton' onClick='chatPrompt()'>
+                  <button id='chat2' type='submit' class='chatbutton'
+                          onClick='chatPrompt()'>
                     Chat
                   </button>
                   <br/><br/>

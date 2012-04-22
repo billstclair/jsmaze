@@ -217,6 +217,7 @@ var jsClientMaze = {};
       var player = jsmaze.makePlayer(props);
       preloadImages(player);
       maze.addPlayer(player);
+      updatePropsScores(player, props, false);
       draw3d();
     }
 
@@ -226,6 +227,7 @@ var jsClientMaze = {};
         console.log('removePlayer, no player for uid:', uid);
         return;
       }
+      updatePropsScores(player, {warring: false}, false);
       maze.removePlayer(player);
       draw3d();
     }
@@ -254,14 +256,25 @@ var jsClientMaze = {};
           player[p] = props[p];
         }
       }
-      if (!(props.warring === undefined) || props.score) {
+      updatePropsScores(player, props, isSelf);
+      draw3d();
+    }
+
+    function updatePropsScores(player, props, isSelf) {
+      var newWarring = !(props.warring === undefined);
+      if (newWarring || props.score) {
         if (player.warring) {
           scoreUpdate(isSelf ? null : player, player.score);
+          if (isSelf && newWarring)
+            maze.forEachPlayer(function(p) {
+              if (p.warring) {
+                scoreUpdate(p, p.score);
+              }
+            });
         } else {
           scoreUpdate(isSelf ? null : player, null);
         }
       }
-      draw3d();
     }
 
     self.clone = clone;

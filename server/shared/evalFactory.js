@@ -38,7 +38,7 @@ if (typeof exports === 'undefined') {
 
     // [function,{name:value,...}]
     self.evaluate = function(socketid, emitter, functionAndArgs, errfun) {
-      try {
+//      try {
         var fun = functionAndArgs[0];
         var args = functionAndArgs[1];
         console.log('evaluating: ' + fun + ' ' + JSON.stringify(args));
@@ -47,10 +47,11 @@ if (typeof exports === 'undefined') {
           throw('No registered function: ' + fun);
         }
         f(emitter, args, socketid, fun);
-      } catch (err) {
-        if (typeof(errfun) === 'function') errfun(err);
-        else throw(err);
-      }
+
+//      } catch (err) {
+//        if (typeof(errfun) === 'function') errfun(err);
+//        else throw(err);
+//      }
     }
   }
 })()                            // eval the function() at the top of the file

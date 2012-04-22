@@ -182,6 +182,13 @@ if (typeof exports === 'undefined') {
       return players;
     }
 
+    self.forEachPlayer = forEachPlayer;
+    function forEachPlayer(fun) {
+      for (uid in players) {
+        fun(players[uid]);
+      }
+    }
+
     self.getPlayer = getPlayer;
     function getPlayer(uid) {
       return players[uid];
@@ -340,7 +347,7 @@ if (typeof exports === 'undefined') {
       self.score = props.score;   // {kills:<num>,deaths:<num>}
       self.warring = props.warring; // Warring & non-warring players can't see
                                     // each other.
-      self.isbot = !self.script;
+      self.isbot = !!self.script;
       if (self.maze) {
         self.maze.addPlayer(self);
       }
