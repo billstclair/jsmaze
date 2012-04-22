@@ -381,6 +381,17 @@ function MazeServer() {
     var updater = forEachUpdater('playerProps', args);
     forEachKnower(player, updater);
     addCanSee(player, true);
+    var key = posstr(player.pos);
+    var tab = canSeeTab[key];
+    if (tab) {
+      for (var i=0; i<tab.length; i++) {
+        var seer = tab[i];
+        var emitter = seer.emitter;
+        if (!seer.warring==!player.warring) {
+          addKnownPlayer(seer, player);
+        }
+      }
+    }
   }
 
   function shoot(emitter, args, socketid, fun) {
