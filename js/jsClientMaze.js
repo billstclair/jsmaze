@@ -1037,7 +1037,14 @@ var jsClientMaze = {};
 
     function drawPlayerName(ctx, playerOrName, dy, left, top, width) {
       var name = playerOrName;
-      if (typeof(name) != 'string') name = playerOrName.name;
+      if (typeof(name) != 'string') {
+        name = playerOrName.name;
+        if (playerOrName.warring) {
+          var score = playerOrName.score;
+          name += ' (' + (score ? score.kills : 0) +
+            ',' + (score ? score.deaths : 0) + ')';
+        }
+      }
       ctx.fillStyle = 'purple';
       ctx.font = Math.floor(dy) + 'px Arial';
       var textWidth = ctx.measureText(name).width;
