@@ -46,6 +46,6 @@ function bulletScript(server, bullet, player) {
       }
     }
   } else {
-    server.removePlayerFromTables(bullet);
+    server.removePlayerFromTables(bullet, 'hitWall');
   }
 }

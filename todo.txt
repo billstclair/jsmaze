@@ -1,7 +1,5 @@
 Bullets
-  Score keeping - optional scorecard
-    Add scores to new player when entering game or warring mode
-    Remove scores for player when leaving game or warring mode
+  Warring mode players can hear chat from all other warring mode players
   Gambling
 
 Sound
@@ -33,7 +31,6 @@ Maze creation.
   Access control
   Bans
   Age limitations
-  Pacifist maze
 
 Wall hangings.
   walls[i][j].side (front, back, right, left)

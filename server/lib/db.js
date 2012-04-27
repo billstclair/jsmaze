@@ -57,7 +57,7 @@ function DB() {
   }
 
   function key(type, name) {
-    return 'jmaze:' + type + ':' + name;
+    return 'jmaze:' + type + (name ? ':' + name : '');
   }
 
   function userkey(login) {

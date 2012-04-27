@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>Sound test</title>
+<script>
+  // The iPhone won't play a sound unless it's loaded or played
+  // in response to user input, so users have to click a button
+  // to enable audio.
+  // WAV appears to be the only format supported by all major browsers.
+  function loadSounds() {
+    window.sounds = new Object();
+    loadSound('tick');
+    loadSound('swoosh');
+    loadSound('ouch');
+    loadSound('shot');
+    loadSound('thud');
+  }
+  function loadSound(name) {
+    var sound = new Audio('images/sys/sound/' + name + '.wav');
+    sound.load;
+    window.sounds[name] = sound;
+  }
+  function playSound(name) {
+    var sound = window.sounds[name];
+    try {
+      sound.pause();
+      sound.currentTime = 0;
+    } catch(e) {}
+    sound.play();
+  }
+</script>
+<body onload='loadSounds()'>
+<input type='submit' onClick="playSound('tick')" value='Tick'/>
+<input type='submit' onClick="playSound('swoosh')" value='Swoosh'/><br/>
+<input type='submit' onClick="playSound('shot')" value='Shot'/>
+<input type='submit' onClick="playSound('ouch')" value='Ouch'/>
+<input type='submit' onClick="playSound('thud')" value='Thud'/>
+</body>
+</html>

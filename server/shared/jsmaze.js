@@ -258,6 +258,36 @@ if (typeof exports === 'undefined') {
       return false;      
     }
 
+    self.forEachCouldSee = forEachCouldSee;
+    function forEachCouldSee(player, fun, heretoo) {
+      function each(dir) {
+        function doit(pos) {
+          var vis = maze.getPlayerMap(pos);
+          if (vis) {
+            for (var i=0; i<vis.length; i++) {
+              fun(vis[i]);            
+            }
+          }
+        }
+        var pos = {i: player.pos.i, j:player.pos.j};
+        if (heretoo) {
+          doit(pos);
+          heretoo = false;
+        }
+        while (maze.canMoveForward(pos, dir)) {
+          pos.i += dir.i;
+          pos.j += dir.j;
+          doit(pos);
+        }
+      }
+      each({i:0, j:1});
+      each({i:1, j:0});
+      each({i:-1, j:0});
+      each({i:0, j:-1});
+    }
+
+
+
     // Convenient to have this here as well as jsmaze.makePlayer
     self.makePlayer = jsmaze.makePlayer;
 
@@ -347,7 +377,8 @@ if (typeof exports === 'undefined') {
       self.score = props.score;   // {kills:<num>,deaths:<num>}
       self.warring = props.warring; // Warring & non-warring players can't see
                                     // each other.
-      self.isbot = !!self.script;
+      self.isBullet = props.isBullet;
+      self.isBot = !!self.script;
       if (self.maze) {
         self.maze.addPlayer(self);
       }
@@ -363,7 +394,8 @@ if (typeof exports === 'undefined') {
               dir: self.dir,
               ghost: self.ghost,
               warring: self.warring,
-              isbot: self.isbot};
+              isBot: self.isBot,
+              isBullet: self.isBullet};
     }
   }
 

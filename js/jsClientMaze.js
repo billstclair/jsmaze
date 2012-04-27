@@ -218,14 +218,19 @@ var jsClientMaze = {};
       preloadImages(player);
       maze.addPlayer(player);
       updatePropsScores(player, props, false);
+      if (player.isBullet) playSound('shot');
       draw3d();
     }
 
-    self.removePlayer = function(uid) {
+    self.removePlayer = function(uid, reason) {
       var player = maze.getPlayer(uid);
       if (!player) {
         console.log('removePlayer, no player for uid:', uid);
         return;
+      }
+      if (selfPlayer.warring) {
+        if (reason == 'hitWall') playSound('thud');
+        else if (reason == 'killed') playSound('ouch');
       }
       player.warring = false;
       updatePropsScores(player, {warring: false}, false);
@@ -233,10 +238,28 @@ var jsClientMaze = {};
       draw3d();
     }
 
-    self.setPlayerPos = function(uid, pos, dir) {
+    self.moveSound = moveSound;
+    function moveSound(reason) {
+      if (reason == 'killed') {
+        if (selfPlayer.warring) playSound('ouch');
+      } else {
+        playSound('tick');
+      }
+    }
+
+    self.turnSound = turnSound;
+    function turnSound() {
+      playSound('swoosh');
+    }
+
+    self.setPlayerPos = function(uid, pos, dir, reason) {
       var player = maze.getPlayer(uid);
       if (!player) {
         console.log('setPlayerPos, no player for uid:', uid);
+        return;
+      }
+      if (selfPlayer.warring) {
+        if (reason == 'killed') playSound('ouch');
       }
       if (pos) maze.movePlayer(player, pos);
       if (dir) player.dir = dir;
@@ -1237,6 +1260,41 @@ var jsClientMaze = {};
     self.shoot = shoot;
     function shoot() {
       if (_proxy) return _proxy.shoot();
+    }
+
+    var soundEnabled = true;
+    self.soundEnabled = function(enabled) {
+      if (!(enabled === undefined)) soundEnabled = enabled;
+      return soundEnabled;
+    }
+
+    var sounds = {};
+    
+    function loadSound(name) {
+      var sound = new Audio('images/sys/sound/' + name + '.wav');
+      sound.load();
+      sounds[name] = sound;
+    }
+
+    function initSounds() {
+      loadSound('tick');
+      loadSound('swoosh');
+      loadSound('shot');
+      loadSound('thud');
+      loadSound('ouch');
+    }
+
+    initSounds();
+
+    self.playSound = playSound;
+    function playSound(name) {
+      if (!soundEnabled) return;
+      var sound = sounds[name];
+      try {
+        sound.pause();
+        sound.currentTime = 0;
+      } catch(e) {}
+      sound.play();
     }
 
   }

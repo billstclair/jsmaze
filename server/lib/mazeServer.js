@@ -72,14 +72,14 @@ function MazeServer() {
     return player.knownPlayers && player.knownPlayers[knownPlayer.uid];
   }
 
-  function removeKnownPlayer(player, knownPlayer) {
+  function removeKnownPlayer(player, knownPlayer, reason) {
     var knownPlayers = player.knownPlayers;
     if (knownPlayers) {
       var uid = knownPlayer.uid;
       if (knownPlayers[uid]) {
         delete player.knownPlayers[uid];
         if (player.emitter) {
-          player.emitter('removePlayer', {uid: uid});
+          player.emitter('removePlayer', {uid: uid, reason: reason});
         }
       }
     }
@@ -117,14 +117,14 @@ function MazeServer() {
   }
 
   self.removePlayerFromTables = removePlayerFromTables;
-  function removePlayerFromTables(player) {
+  function removePlayerFromTables(player, reason) {
     if (botTable[player.uid]) removeBot(player);
     removeCanSee(player);
     var mazePlayers = maze.getPlayers();
     for (var uid in mazePlayers) {
       var otherPlayer = mazePlayers[uid];
       if (otherPlayer != player) {
-        removeKnownPlayer(otherPlayer, player);
+        removeKnownPlayer(otherPlayer, player, reason);
       }
     }
     maze.removePlayer(player);
@@ -192,12 +192,12 @@ function MazeServer() {
     return notifyTab;
   }
 
-  function sendRefreshNotifications(player, notifyTab, which) {
+  function sendRefreshNotifications(player, notifyTab, reason) {
     var uid= player.uid;
     for (var key in notifyTab) {
       var otherPlayer = notifyTab[key];
       if (isKnownPlayer(otherPlayer, player)) {
-        var args = {uid:uid, pos:player.pos, dir:player.dir};
+        var args = {uid:uid, pos:player.pos, dir:player.dir, reason: reason};
         if (otherPlayer.emitter) {
           otherPlayer.emitter('setPlayerPos', args);
         }
@@ -208,17 +208,17 @@ function MazeServer() {
   }
 
   self.doMove = doMove;
-  function doMove(player, pos) {
+  function doMove(player, pos, reason) {
     removeCanSee(player);
     var notifyTab = whoCanSee(player.pos);
     maze.movePlayer(player, pos);
     addCanSee(player, true);
     notifyTab = whoCanSee(player.pos, notifyTab);
-    if (player.emitter) player.emitter('moveto', {pos: pos});
+    if (player.emitter) player.emitter('moveto', {pos: pos, reason: reason});
     forEachKnower(player, function(otherPlayer) {
       notifyTab[otherPlayer.uid] = otherPlayer;
     });
-    sendRefreshNotifications(player, notifyTab);
+    sendRefreshNotifications(player, notifyTab, reason);
   }
 
   function doTurn(player, dir) {
@@ -278,30 +278,7 @@ function MazeServer() {
   }
 
   function forEachCouldSee(player, fun, heretoo) {
-    function each(dir) {
-      function doit(pos) {
-        var vis = maze.getPlayerMap(pos);
-        if (vis) {
-          for (var i=0; i<vis.length; i++) {
-            fun(vis[i]);            
-          }
-        }
-      }
-      var pos = {i: player.pos.i, j:player.pos.j};
-      if (heretoo) {
-        doit(pos);
-        heretoo = false;
-      }
-      while (maze.canMoveForward(pos, dir)) {
-        pos.i += dir.i;
-        pos.j += dir.j;
-        doit(pos);
-      }
-    }
-    each({i:0, j:1});
-    each({i:1, j:0});
-    each({i:-1, j:0});
-    each({i:0, j:-1});
+    return maze.forEachCouldSee(player, fun, heretoo);
   }
 
   function chat(emitter, args, socketid, fun) {
@@ -413,7 +390,7 @@ function MazeServer() {
       var j = Math.floor(height*Math.random());
       if (i == width) i--;
       if (j == height) j--;
-      doMove(player, {i:i, j:j});
+      doMove(player, {i:i, j:j}, 'killed');
       updateScores(player, killer);
       if (bullet) {
         removePlayerFromTables(bullet);

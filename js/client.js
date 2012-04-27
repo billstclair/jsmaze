@@ -105,12 +105,14 @@ function Client() {
   }
 
   function moveto(socket, args) {
+    maze.moveSound(args.reason);
     maze.topdrawpos(true);
     maze.draw3d(null, args.pos);
     maze.topdrawpos();
   }
 
   function turn(socket, args) {
+    maze.turnSound();
     maze.topdrawpos(true);
     maze.draw3d(null, null, args.dir);
     maze.topdrawpos();
@@ -175,22 +177,24 @@ function Client() {
 
   function removePlayer(socket, args) {
     var uid = args.uid;
+    var reason = args.reason;
     if (!uid) {
       console.log('Server sent removePlayer with no uid.');
       return;
     }
-    maze.removePlayer(uid);
+    maze.removePlayer(uid, reason);
   }
 
   function setPlayerPos(socket, args) {
     var uid = args.uid;
     var pos = args.pos;
     var dir = args.dir;
+    var reason = args.reason;
     if (!(uid && (pos || dir))) {
       console.log('Server sent setPlayerPos with missing parameter.');
       return;
     }
-    maze.setPlayerPos(uid, pos, dir);
+    maze.setPlayerPos(uid, pos, dir, reason);
   }
 
   function playerProps(socket, args) {
