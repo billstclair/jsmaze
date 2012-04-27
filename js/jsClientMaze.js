@@ -259,7 +259,7 @@ var jsClientMaze = {};
 
     self.turnSound = turnSound;
     function turnSound() {
-      playSound('swoosh');
+      playSound('swoosh2');
     }
 
     self.setPlayerPos = function(uid, pos, dir, reason) {
@@ -1285,11 +1285,13 @@ var jsClientMaze = {};
     }
 
     var sounds = {};
+    var volumes = {};
     
-    function loadSound(name) {
+    function loadSound(name, volume) {
       var sound = new Audio('images/sys/sound/' + name + '.wav');
       sound.load();
       sounds[name] = sound;
+      if (!(volume === undefined)) volumes[name] = volume;
     }
 
     var soundsInited = false;
@@ -1297,7 +1299,7 @@ var jsClientMaze = {};
     function initSounds() {
       if (soundsInited) return;
       loadSound('tick');
-      loadSound('swoosh');
+      loadSound('swoosh2', 0.5);
       loadSound('shot');
       loadSound('thud');
       loadSound('ouch');
@@ -1312,6 +1314,8 @@ var jsClientMaze = {};
         sound.pause();
         sound.currentTime = 0;
       } catch(e) {}
+      var volume = volumes[name];
+      if (!(volume===undefined)) sound.volume = volume;
       sound.play();
     }
 

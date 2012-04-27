@@ -36,10 +36,13 @@
   function playSound(name) {
     loadSounds();
     var sound = window.sounds[name];
+    if (name == 'swoosh') sound.volume = 0.5;
     try {
       sound.pause();
       sound.currentTime = 0;
     } catch(e) {}
+    document.getElementById('volume').innerHTML=sound.volume;
+    
     sound.play();
   }
 </script>
@@ -49,5 +52,6 @@
 <input type='submit' onClick="playSound('shot')" value='Shot'/>
 <input type='submit' onClick="playSound('ouch')" value='Ouch'/>
 <input type='submit' onClick="playSound('thud')" value='Thud'/>
+<p>Volume: <span id='volume'></span></p>
 </body>
 </html>
