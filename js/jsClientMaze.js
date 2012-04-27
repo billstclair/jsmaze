@@ -108,6 +108,16 @@ var jsClientMaze = {};
   jsClientMaze.ClientMaze = ClientMaze;
   function ClientMaze(mapOrMaze) {
     var self = this;
+    init();
+
+    function init() {
+      if (!iThing()) initSounds;
+    }
+
+    function iThing() {
+    return (navigator.userAgent.match(/iPhone/i)) || 
+      (navigator.userAgent.match(/iPod/i));
+    }
 
     var selfPlayer = {};
     self.selfPlayer = function() {
@@ -1189,6 +1199,7 @@ var jsClientMaze = {};
 
     self.moveForward = moveForward;
     function moveForward() {
+      initSounds();
       var pos = self.pos;
       var dir = self.dir;
       if (maze.canMoveForward(pos, dir)) {
@@ -1199,6 +1210,7 @@ var jsClientMaze = {};
 
     self.moveBack = moveBack;
     function moveBack() {
+      initSounds();
       var pos = self.pos;
       var dir = self.dir;
       if (maze.canMoveBackward(pos, dir)) {
@@ -1209,6 +1221,7 @@ var jsClientMaze = {};
 
     self.turnRight = turnRight;
     function turnRight() {
+      initSounds();
       if (_proxy) return _proxy.turnRight();
       topdrawpos(true);
       di = self.dir.i;
@@ -1220,6 +1233,7 @@ var jsClientMaze = {};
 
     self.turnLeft = turnLeft;
     function turnLeft() {
+      initSounds();
       if (_proxy) return _proxy.turnLeft();
       topdrawpos(true);
       di = self.dir.i;
@@ -1236,6 +1250,7 @@ var jsClientMaze = {};
     }
 
     function chatPrompt() {
+      initSounds();
       if (chatPromptFun) chatPromptFun(self);
     }
 
@@ -1259,6 +1274,7 @@ var jsClientMaze = {};
 
     self.shoot = shoot;
     function shoot() {
+      initSounds();
       if (_proxy) return _proxy.shoot();
     }
 
@@ -1276,15 +1292,17 @@ var jsClientMaze = {};
       sounds[name] = sound;
     }
 
+    var soundsInited = false;
+
     function initSounds() {
+      if (soundsInited) return;
       loadSound('tick');
       loadSound('swoosh');
       loadSound('shot');
       loadSound('thud');
       loadSound('ouch');
+      soundsInited = true;
     }
-
-    initSounds();
 
     self.playSound = playSound;
     function playSound(name) {

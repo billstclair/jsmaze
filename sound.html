@@ -6,13 +6,27 @@
   // in response to user input, so users have to click a button
   // to enable audio.
   // WAV appears to be the only format supported by all major browsers.
+  function iThing() {
+    return (navigator.userAgent.match(/iPhone/i)) || 
+      (navigator.userAgent.match(/iPod/i));
+  }
+
+  function init() {
+    if (iThing()) return;
+    loadSounds();
+  }
+
+  var loaded = false;
+
   function loadSounds() {
+    if (loaded) return;
     window.sounds = new Object();
     loadSound('tick');
     loadSound('swoosh');
     loadSound('ouch');
     loadSound('shot');
     loadSound('thud');
+    loaded = true;
   }
   function loadSound(name) {
     var sound = new Audio('images/sys/sound/' + name + '.wav');
@@ -20,6 +34,7 @@
     window.sounds[name] = sound;
   }
   function playSound(name) {
+    loadSounds();
     var sound = window.sounds[name];
     try {
       sound.pause();
@@ -28,7 +43,7 @@
     sound.play();
   }
 </script>
-<body onload='loadSounds()'>
+<body onload='init()'>
 <input type='submit' onClick="playSound('tick')" value='Tick'/>
 <input type='submit' onClick="playSound('swoosh')" value='Swoosh'/><br/>
 <input type='submit' onClick="playSound('shot')" value='Shot'/>

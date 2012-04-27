@@ -262,7 +262,7 @@ if (typeof exports === 'undefined') {
     function forEachCouldSee(player, fun, heretoo) {
       function each(dir) {
         function doit(pos) {
-          var vis = maze.getPlayerMap(pos);
+          var vis = self.getPlayerMap(pos);
           if (vis) {
             for (var i=0; i<vis.length; i++) {
               fun(vis[i]);            
@@ -274,7 +274,7 @@ if (typeof exports === 'undefined') {
           doit(pos);
           heretoo = false;
         }
-        while (maze.canMoveForward(pos, dir)) {
+        while (self.canMoveForward(pos, dir)) {
           pos.i += dir.i;
           pos.j += dir.j;
           doit(pos);
