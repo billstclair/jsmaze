@@ -1,50 +1,41 @@
 <html>
 <head>
 <title>Sound test</title>
+<script src='js/jsAudio.js'></script>
+
 <script>
-  // The iPhone won't play a sound unless it's loaded or played
-  // in response to user input, so users have to click a button
-  // to enable audio.
-  // WAV appears to be the only format supported by all major browsers.
-  function iThing() {
-    return (navigator.userAgent.match(/iPhone/i)) || 
-      (navigator.userAgent.match(/iPod/i));
-  }
+// The iPhone won't play a sound unless it's loaded or played
+// in response to user input, so users have to click a button
+// to enable audio.
+// WAV appears to be the only format supported by all major browsers.
+function iThing() {
+  return (navigator.userAgent.match(/iPhone/i)) || 
+    (navigator.userAgent.match(/iPod/i));
+}
 
-  function init() {
-    if (iThing()) return;
-    loadSounds();
-  }
+var files = new jsAudio.AudioFiles('images/sys/sound/');
 
-  var loaded = false;
+function init() {
+  if (iThing()) return;
+  loadSounds();
+}
 
-  function loadSounds() {
-    if (loaded) return;
-    window.sounds = new Object();
-    loadSound('tick');
-    loadSound('swoosh');
-    loadSound('ouch');
-    loadSound('shot');
-    loadSound('thud');
-    loaded = true;
-  }
-  function loadSound(name) {
-    var sound = new Audio('images/sys/sound/' + name + '.wav');
-    sound.load;
-    window.sounds[name] = sound;
-  }
-  function playSound(name) {
-    loadSounds();
-    var sound = window.sounds[name];
-    if (name == 'swoosh') sound.volume = 0.5;
-    try {
-      sound.pause();
-      sound.currentTime = 0;
-    } catch(e) {}
-    document.getElementById('volume').innerHTML=sound.volume;
-    
-    sound.play();
-  }
+var loaded = false;
+
+function loadSounds() {
+  if (loaded) return;
+  files.getFile('tick');
+  files.getFile('swoosh');
+  files.getFile('ouch');
+  files.getFile('shot');
+  files.getFile('thud');
+  loaded = true;
+}
+
+function playSound(name) {
+  loadSounds();
+  files.playFile(name);
+}
 </script>
 <body onload='init()'>
 <input type='submit' onClick="playSound('tick')" value='Tick'/>
