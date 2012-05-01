@@ -81,4 +81,74 @@ var jsAudio = {};
     }
   }
 
+  function isKey(key) {
+    if (key == 'iThing') return isIThing();
+    if (key == 'Safari') return isSafari();
+    return true;
+  }
+
+  // {iThing: {basePath: 'images/sys/sound/',
+  //           type: 'm4a',
+  //           files: {all: {tick: {start: 0, length: 0.2},
+  //                         swoosh2: {start: 1, length: 0.2},
+  //                         shot: {start: 2, length: 0.6},
+  //                         thud: {start: 3, length: 0.3},
+  //                         ouch: {start: 4, length: 1.0}}}},
+  //  else: {basePath: 'images/sys/sound/',
+  //         type: 'wav',
+  //         files: {tick: 'tick', swoosh2: 'swoosh2', shot: 'shot',
+  //                 thud: 'thud', ouch: 'ouch'}}}
+  jsAudio.Sounds = Sounds;
+  function Sounds(specs) {
+    var self = this;
+    var sounds = {};
+    self.sounds = sounds;       // debugging
+
+    init(specs);
+
+    function init(specs) {
+      var spec = null;
+      for (var key in specs) {
+        if (isKey(key)) {
+          spec = specs[key];
+          break;
+        }
+      }
+      if (!spec) return;
+      var audio = new AudioFile(spec.basePath, spec.type);
+      var files = spec.files;
+      for (var file in files) {
+        audio.getFile(file);
+        var fileSpec = files[file];
+        if (typeof(fileSpec) == 'string') {
+          sounds[fileSpec] == {audio: audio, file: file};
+        } else {
+          for (var sound in fileSpec) {
+            var info = fileSpec[sound];
+            sounds[sound] = {audio: audio, file: file,
+                             start: info.start, length: info.length};
+          }
+        }
+      }
+    }
+
+    self.play = play;
+    function play(sound) {
+      var spec = sounds.sound;
+      if (!spec) return;
+      spec.audio.playFile(spec.file, spec.start, spec.length);
+    }
+  }
+
+  jsAudio.isIThing = isIThing;
+  function isIThing() {
+    return (navigator.userAgent.match(/iPhone/)) || 
+      (navigator.userAgent.match(/iPod/));
+  }
+
+  jsAudio.isSafari = isSafari;
+  function isSafari() {
+    return (navigator.userAgent.match(/Safari/))
+  }
+
 })();
