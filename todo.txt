@@ -1,9 +1,10 @@
+Warn if no JavaScript
+
 Bullets
   Warring mode players can hear chat from all other warring mode players
   Gambling
 
 Sound
-  enable/disable sound, stored in cookie
   sound volume stored in cookie
   Move, turn for other players, volume reduced by distance
   Chat

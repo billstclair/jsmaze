@@ -7,6 +7,8 @@
   <script src='server/shared/evalFactory.js'></script>
   <script src='js/jsClientMaze.js'></script>
   <script src='js/client.js'></script>
+  <script src='js/jsAudio.js'></script>
+  <script src='js/audioSpecs.js'></script>
   <script>
 
 function setSpines(checkbox) {
@@ -28,6 +30,7 @@ function start() {
   $('#scoreTable').hide();
   $('#shoot1Span').hide();
   $('#shoot2Span').hide();
+  if (!soundEnabled()) toggleMute();
   localSetup(false, true);
   connect($('#connectButton')[0]);
 }
@@ -50,6 +53,7 @@ function getCookie(c_name) {
     x = x.replace(/^\s+|\s+$/g,"");
     if (x == c_name) return unescape(y);
   }
+  return null;
 }
 
 function setPlayerNameCookie(playerName) {
@@ -66,6 +70,13 @@ function getPlayerName() {
   return playerName;
 }
 
+function soundEnabled(enabled) {
+  if (!(enabled === undefined)) {
+    setCookie('soundEnabled', enabled ? 'true' : 'false', 180);
+  }
+  return getCookie('soundEnabled') != 'false';
+}
+
 function connect(button) {
   var label = $(button).val();
   if (label == 'Connect') {
@@ -74,6 +85,8 @@ function connect(button) {
     try {
       client.chatPromptFun = chatPrompt;
       client.scoreUpdateFun = scoreUpdate;
+      client.audioSpecs = audioSpecs;
+      client.soundEnabled(soundEnabled());
       client.connect('/', canvas3d, canvas, getResource(), getPlayerName());
       canvas3d.focus();
       $(button).val('Disconnect');
@@ -130,7 +143,6 @@ function toggleWar() {
     $('#shoot2Span').show();
     $('#scoreTable').show();
     client.warring(true);
-    canvas3d.focus();
   } else {
     $('#war1').text('War');
     $('#war2').text('War');
@@ -138,12 +150,28 @@ function toggleWar() {
     $('#shoot2Span').hide();
     $('#scoreTable').hide();
     client.warring(false);
-    canvas3d.focus();
   }
+  canvas3d.focus();
+}
+
+function toggleMute() {
+  if ($('#mute1').text().trim() == 'Mute') {
+    $('#mute1').text('Sound');
+    $('#mute2').text('Sound');
+    soundEnabled(false);
+    client.soundEnabled(false);
+  } else {
+    $('#mute1').text('Mute');
+    $('#mute2').text('Mute');
+    soundEnabled(true);
+    client.soundEnabled(true);
+  }
+  if (canvas3d) canvas3d.focus();
 }
 
 function shoot() {
   client.shoot();
+  canvas3d.focus();
 }
 
 var scores = {};
@@ -259,6 +287,11 @@ function localSetup(keepmaze, nodraw) {
                           onClick='toggleWar()'>
                     War
                   </button>
+                  <br/><br/>
+                  <button id='mute1' type='submit' class='chatbutton'
+                          onClick='toggleMute()'>
+                    Mute
+                  </button>
                 </td>
                 <td>
                   <center>
@@ -287,6 +320,11 @@ function localSetup(keepmaze, nodraw) {
                   <button id='war2' type='submit' class='chatbutton'
                           onClick='toggleWar()'>
                     War
+                  </button>
+                  <br/><br/>
+                  <button id='mute2' type='submit' class='chatbutton'
+                          onClick='toggleMute()'>
+                    Mute
                   </button>
                 </td>
               </tr>

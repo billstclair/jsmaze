@@ -100,6 +100,12 @@ var jsClientMaze = {};
   var abs = Math.abs;
   var floor = Math.floor;
 
+  var soundsInited = false;
+  var sounds = {};
+  var volumes = {};
+  var loaded = {};
+  var lastPlayed = {};
+
   var alertp = false;
   function maybeAlert(msg) {
     if (alertp) alert(msg);
@@ -108,15 +114,10 @@ var jsClientMaze = {};
   jsClientMaze.ClientMaze = ClientMaze;
   function ClientMaze(mapOrMaze) {
     var self = this;
-    init();
-
-    function init() {
-      if (!iThing()) initSounds;
-    }
 
     function iThing() {
-    return (navigator.userAgent.match(/iPhone/i)) || 
-      (navigator.userAgent.match(/iPod/i));
+      return (navigator.userAgent.match(/iPhone/i)) || 
+        (navigator.userAgent.match(/iPod/i));
     }
 
     var selfPlayer = {};
@@ -1284,41 +1285,30 @@ var jsClientMaze = {};
       return soundEnabled;
     }
 
-    var sounds = {};
-    var volumes = {};
-    
-    function loadSound(name, volume) {
-      var sound = new Audio('images/sys/sound/' + name + '.wav');
-      sound.load();
-      sounds[name] = sound;
-      if (!(volume === undefined)) volumes[name] = volume;
+    this.sounds = null;
+    var audioSpecs = null;
+
+    self.audioSpecs = audioSpecsAccessor;
+    function audioSpecsAccessor(specs) {
+      if (!(specs === undefined)) {
+        audioSpecs = specs;
+        if (!jsAudio.isIThing()) initSounds();
+      }
+      return audioSpecs;
     }
 
     var soundsInited = false;
-
     function initSounds() {
       if (soundsInited) return;
-      loadSound('tick');
-      loadSound('swoosh2', 0.5);
-      loadSound('shot');
-      loadSound('thud');
-      loadSound('ouch');
+      if (audioSpecs) this.sounds = new jsAudio.Sounds(audioSpecs);
       soundsInited = true;
     }
 
     self.playSound = playSound;
     function playSound(name) {
       if (!soundEnabled) return;
-      var sound = sounds[name];
-      try {
-        sound.pause();
-        sound.currentTime = 0;
-      } catch(e) {}
-      var volume = volumes[name];
-      if (!(volume===undefined)) sound.volume = volume;
-      sound.play();
+      if (this.sounds) this.sounds.play(name);
     }
-
   }
 
   // Necessary for browser compatibility

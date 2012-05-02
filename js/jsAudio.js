@@ -25,6 +25,12 @@ var jsAudio = {};
     var lastPlayed = {};
     var timeouts = {};
 
+    // For debugging
+    self.files = files;
+    self.loaded = loaded;
+    self.lastPlayed = lastPlayed;
+    self.timeouts = timeouts;
+
     self.getFile = getFile;
     function getFile(file) {
       var audio = files[file];
@@ -38,7 +44,7 @@ var jsAudio = {};
     }
 
     self.playFile = playFile;
-    function playFile(file, start, length) {
+    function playFile(file, volume, start, length) {
       var audio = getFile(file);
       var now = new Date();
       if ((now - lastPlayed[file]) < minPlayTime) return;
@@ -56,14 +62,16 @@ var jsAudio = {};
         } catch(e) {
         }
       }
-      if (start === undefined) start = 0;
+      if (typeof(start) != 'number') start = 0;
+      if (typeof(volume) != 'number') volume = 1;
       try {
         audio.currentTime = start;
+        audio.volume = volume;
         audio.play();
         loaded[file] = true;
         lastPlayed[file] = new Date();
         if (!(length === undefined)) {
-          timeouts[file] = window.setTimeout(makeTimeout(file), length * 1000);
+          timeouts[file] = window.setTimeout(makeTimeoutF(file), length * 1000);
         }
       } catch(e) {
       }
@@ -79,12 +87,6 @@ var jsAudio = {};
         }
       }
     }
-  }
-
-  function isKey(key) {
-    if (key == 'iThing') return isIThing();
-    if (key == 'Safari') return isSafari();
-    return true;
   }
 
   // {iThing: {basePath: 'images/sys/sound/',
@@ -108,35 +110,40 @@ var jsAudio = {};
 
     function init(specs) {
       var spec = null;
-      for (var key in specs) {
-        if (isKey(key)) {
-          spec = specs[key];
-          break;
-        }
-      }
-      if (!spec) return;
-      var audio = new AudioFile(spec.basePath, spec.type);
+      if (isIThing()) spec = specs.iThing;
+      if (!spec && isSafari()) spec = specs.Safari;
+      if (!spec) spec = specs.else;
+      if (!spec) throw('No spec for key: else');
+      var audio = new AudioFiles(spec.basePath, spec.type);
       var files = spec.files;
       for (var file in files) {
         audio.getFile(file);
         var fileSpec = files[file];
         if (typeof(fileSpec) == 'string') {
-          sounds[fileSpec] == {audio: audio, file: file};
+          sounds[fileSpec] = {audio: audio, file: file};
         } else {
           for (var sound in fileSpec) {
             var info = fileSpec[sound];
             sounds[sound] = {audio: audio, file: file,
-                             start: info.start, length: info.length};
+                             volume: info.volume,
+                             start: info.start,
+                             length: info.length};
           }
         }
       }
     }
 
+    function debug(str) {
+      if (self.debugElt) {
+        self.debugElt.innerHTML = str;
+      }
+    }
+
     self.play = play;
     function play(sound) {
-      var spec = sounds.sound;
+      var spec = sounds[sound];
       if (!spec) return;
-      spec.audio.playFile(spec.file, spec.start, spec.length);
+      spec.audio.playFile(spec.file, spec.volume, spec.start, spec.length);
     }
   }
 

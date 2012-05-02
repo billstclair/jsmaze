@@ -21,7 +21,7 @@ if (typeof exports === 'undefined') {
   }
 
   function Evaluator() {
-    self = this;
+    var self = this;
 
     var dispatchTable = {};
     this.dispatchTable = dispatchTable;

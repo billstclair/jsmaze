@@ -4,45 +4,49 @@
 <script src='js/jsAudio.js'></script>
 
 <script>
-// The iPhone won't play a sound unless it's loaded or played
-// in response to user input, so users have to click a button
-// to enable audio.
-// WAV appears to be the only format supported by all major browsers.
-function iThing() {
-  return (navigator.userAgent.match(/iPhone/i)) || 
-    (navigator.userAgent.match(/iPod/i));
-}
-
-var files = new jsAudio.AudioFiles('images/sys/sound/');
+  var specs =  {iThing: {basePath: 'images/sys/sound/',
+                         type: 'm4a',
+                         files: {all: {tick: {start: 0, length: 0.3},
+                                       swoosh2: {start: 1, length: 0.3},
+                                       shot: {start: 2, length: 0.6, volume: 0.6},
+                                       thud: {start: 3, length: 0.3},
+                                       ouch: {start: 4, length: 1.0}}}},
+                else: {basePath: 'images/sys/sound/',
+                       type: 'wav',
+                       files: {tick: 'tick',
+                               swoosh2: 'swoosh2',
+                               shot: {shot: {volume: 0.6}},
+                               thud: 'thud',
+                               ouch: 'ouch'}}};
 
 function init() {
-  if (iThing()) return;
+  if (jsAudio.isIThing()) return;
   loadSounds();
 }
 
 var loaded = false;
+var sounds = null;
 
 function loadSounds() {
   if (loaded) return;
-  files.getFile('tick');
-  files.getFile('swoosh');
-  files.getFile('ouch');
-  files.getFile('shot');
-  files.getFile('thud');
+  sounds = new jsAudio.Sounds(specs);
+  sounds.debugElt = document.getElementById('debug');
+  var span = document.getElementById('sounds');
   loaded = true;
 }
 
 function playSound(name) {
   loadSounds();
-  files.playFile(name);
+  sounds.play(name);
 }
 </script>
 <body onload='init()'>
+<input type='submit' onClick="loadSounds()" value='Load'><br/>
 <input type='submit' onClick="playSound('tick')" value='Tick'/>
-<input type='submit' onClick="playSound('swoosh')" value='Swoosh'/><br/>
+<input type='submit' onClick="playSound('swoosh2')" value='Swoosh'/><br/>
 <input type='submit' onClick="playSound('shot')" value='Shot'/>
 <input type='submit' onClick="playSound('ouch')" value='Ouch'/>
 <input type='submit' onClick="playSound('thud')" value='Thud'/>
-<p>Volume: <span id='volume'></span></p>
+<p>debug: <span id='debug'></span></p>
 </body>
 </html>

@@ -53,6 +53,7 @@ function Client() {
   var playerName = null;
   self.chatPromptFun = null;
   self.scoreUpdateFun = null;
+  self.audioSpecs = null;
 
   self.connect = connect;
   function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
@@ -88,11 +89,20 @@ function Client() {
     maze.draw3d();
   }
 
+  var soundEnabled = true;
+  self.soundEnabled = function(enabled) {
+    if (!(enabled == undefined)) soundEnabled = enabled;
+    if (maze) maze.soundEnabled(enabled);
+    return soundEnabled;
+  }
+
   function setMaze(socket, args) {
     var map = args.map;
     maze = new jsClientMaze.ClientMaze(map);
     maze.chatPromptFun(self.chatPromptFun);
     maze.scoreUpdateFun(self.scoreUpdateFun);
+    maze.soundEnabled(soundEnabled);
+    maze.audioSpecs(self.audioSpecs);
 
     maze.playerName(playerName);
     maze.serverProxy(proxy);
