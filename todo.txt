@@ -5,13 +5,17 @@ Bullets
   Gambling
 
 Sound
+  Should hear bullet firing even if not looking at it.
+    Same as hearing other players move.
   sound volume stored in cookie
   Move, turn for other players, volume reduced by distance
+    Silent if done slowly
   Chat
   Mention nick in chat
   Death - Add Wilhelm scream
 
 Scrollback for chat
+  timestamps
   Web links
 
 Registration
