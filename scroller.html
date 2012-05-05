@@ -1,70 +1,32 @@
 <html>
 <head>
   <title>Scroller Play</title>
+  <link rel='stylesheet' type='text/css' href='css/tables.css'>
   <script src='js/jquery.min.js'></script>
   <script src='js/jsScroller.js'></script>
   <script>
-var lines = [];
-var curline = 0;                // where the next line will go
-var fullp = false;
-var maxlines = 10;
+
+var scroller;
 
 function addline(line) {
-  lines[curline++] = line;
-  if (curline >= maxlines) {
-    fullp = true;
-    curline = 0;
-  }
-  displayLines();
-}
-
-function isFirefox() {
-  return (navigator.userAgent.match(/Firefox/));
-}
-
-// Don't know why Firefox is off by one pixel, but it is
-var scrollOffset = isFirefox() ? 1 : 0;
-
-function displayLines() {
-  var str = '';
-  var idx = fullp ? curline : 0;
-  if (idx >= maxlines) idx = 0;
-  var cnt = fullp ? maxlines : curline;
-  for (var i=1; i<cnt; i++) {
-    if (i > 1) str += '<br/>\n';
-    str += lines[idx++];
-    if (idx >= maxlines) idx = 0;
-  }
-  if (cnt > 1) str += '<br/>\n';
-  var text = $('#text');
-  console.log('scrollTop:', text.scrollTop(), 'scrollHeight:', text[0].scrollHeight,
-             'clientHeight:', text[0].clientHeight);
-  var clientHeight = text[0].clientHeight;
-  var scrollHeight = text[0].scrollHeight;
-  var bottomScroll = scrollHeight - clientHeight;
-  var doScroll = (text.scrollTop() == bottomScroll);
-  if (!doScroll) {
-    var scrollTop = text.scrollTop();
-    text.html(str);
-    var scrollDiff = scrollHeight - text[0].scrollHeight - scrollOffset;
-    console.log('  scrollHeight:', text[0].scrollHeight, 'scrollDiff:', scrollDiff);
-  }
-  str += lines[idx];
-  text.html(str);
-  if (doScroll) text.scrollTop(text[0].scrollHeight);
-  else text.scrollTop(Math.max(0, scrollTop-scrollDiff));
+  var time = new Date;
+  time = time.toLocaleTimeString();
+  scroller.addline([time, line]);
 }
 
 function addInput() {
   var input = $('#input');
-  addline(input.val());
+  var text = $('<div/>').text(input.val()).html();
+  addline(text);
   input.val('');
-  $
+  input[0].focus();
 }
 
 function onload() {
+  scroller = new jsScroller.Scroller($('#text'), 10);
+  scroller.tableClass('prettytable');
   for (var i=1; i<=10; i++) {
-    addline(i);
+    addline(''+i);
   }
   $('#input')[0].focus();
 }
