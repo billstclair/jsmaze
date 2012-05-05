@@ -2,11 +2,11 @@
 <head>
   <title>Scroller Play</title>
   <script src='js/jquery.min.js'></script>
+  <script src='js/jsScroller.js'></script>
   <script>
 var lines = [];
 var curline = 0;                // where the next line will go
 var fullp = false;
-var sizes = [];
 var maxlines = 10;
 
 function addline(line) {
@@ -18,15 +18,24 @@ function addline(line) {
   displayLines();
 }
 
+function isFirefox() {
+  return (navigator.userAgent.match(/Firefox/));
+}
+
+// Don't know why Firefox is off by one pixel, but it is
+var scrollOffset = isFirefox() ? 1 : 0;
+
 function displayLines() {
   var str = '';
   var idx = fullp ? curline : 0;
   if (idx >= maxlines) idx = 0;
   var cnt = fullp ? maxlines : curline;
   for (var i=1; i<cnt; i++) {
+    if (i > 1) str += '<br/>\n';
     str += lines[idx++];
     if (idx >= maxlines) idx = 0;
   }
+  if (cnt > 1) str += '<br/>\n';
   var text = $('#text');
   console.log('scrollTop:', text.scrollTop(), 'scrollHeight:', text[0].scrollHeight,
              'clientHeight:', text[0].clientHeight);
@@ -37,8 +46,8 @@ function displayLines() {
   if (!doScroll) {
     var scrollTop = text.scrollTop();
     text.html(str);
-    var scrollDiff = scrollHeight - text[0].scrollHeight;
-    console.log('scrollDiff:', scrollDiff);
+    var scrollDiff = scrollHeight - text[0].scrollHeight - scrollOffset;
+    console.log('  scrollHeight:', text[0].scrollHeight, 'scrollDiff:', scrollDiff);
   }
   str += lines[idx];
   text.html(str);
@@ -48,12 +57,15 @@ function displayLines() {
 
 function addInput() {
   var input = $('#input');
-  addline(input.val()+'<br/>\n');
+  addline(input.val());
   input.val('');
   $
 }
 
 function onload() {
+  for (var i=1; i<=10; i++) {
+    addline(i);
+  }
   $('#input')[0].focus();
 }
 
@@ -66,7 +78,7 @@ function inputKey(event) {
   </script>
 </head>
 <body onload='onload()'>
-  <div id='text' style='width: 50em; height: 5em; overflow:auto; position:relative; border: 1px solid;'>
+  <div id='text' style='width: 20em; height: 5em; overflow:auto; overflow-x: hidden; position:relative; border: 1px solid;'>
     <b>Text goes here</b>
   </div><br/>
   <input type='text' id='input' size='40'
