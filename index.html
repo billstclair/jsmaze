@@ -152,7 +152,7 @@ function chatMaybePrompt() {
   var input = $('#chatInput');
   if (chatEnabled() && input.val()) {
     sendInput();
-    input[0].focus();
+    input.focus();
   } else {
     chatPrompt();
   }
@@ -229,11 +229,12 @@ function toggleChat(enabled) {
   if (enabled) {
     chatdiv.show();
     $('#showchat').text('Hide chat');
-    $('#chatInput')[0].focus();
+    $('#chatInput').focus();
   }
   else {
     chatdiv.hide();
     $('#showchat').text('Show chat');
+    canvas3d.focus();
   }
 }
 
