@@ -73,7 +73,7 @@ jsScroller = {};
       if (!doScroll) {
         var scrollTop = div.scrollTop();
         div.html(str + '</table>');
-        var scrollDiff = scrollHeight - div[0].scrollHeight - scrollOffset;
+        var scrollDiff = scrollHeight - div[0].scrollHeight;
       }
       var columns = lines[idx++];
       if (idx >= maxlines) idx = 0;
@@ -84,12 +84,5 @@ jsScroller = {};
       else div.scrollTop(Math.max(0, scrollTop - scrollDiff));
     }
   }
-
-  function isFirefox() {
-    return (navigator.userAgent.match(/Firefox/));
-  }
-
-  // Don't know why Firefox is off by one pixel, but it is
-  var scrollOffset = isFirefox() ? 1 : 0;
 
 })();
