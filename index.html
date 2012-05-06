@@ -234,7 +234,7 @@ function toggleChat(enabled) {
   else {
     chatdiv.hide();
     $('#showchat').text('Show chat');
-    canvas3d.focus();
+    if (canvas3d) canvas3d.focus();
   }
 }
 
