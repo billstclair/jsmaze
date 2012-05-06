@@ -217,11 +217,14 @@ function Client() {
     emitEval('chat', {msg: msg});
   }
 
+  self.chatListener = null;
+
   // Need to have a hook so index.html can add the message
   // to a scrolling TextArea.
   function receiveChat(socket, args) {
     var name = args.name;
     var msg = args.msg;
     maze.receiveChat(name, msg);
+    if (self.chatListener) self.chatListener(name, msg);
   }
 }

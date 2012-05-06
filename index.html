@@ -9,6 +9,7 @@
   <script src='js/client.js'></script>
   <script src='js/jsAudio.js'></script>
   <script src='js/audioSpecs.js'></script>
+  <script src='js/jsScroller.js'></script>
   <script>
 
 function setSpines(checkbox) {
@@ -26,11 +27,15 @@ function getResource() {
   return path ? path + '/socket.io' : 'socket.io';
 }
 
+var scroller;
+
 function start() {
   $('#scoreTable').hide();
   $('#shoot1Span').hide();
   $('#shoot2Span').hide();
   if (!soundEnabled()) toggleMute();
+  if (!chatEnabled()) toggleChat(false);
+  scroller = new jsScroller.Scroller($('#chat'), 100);
   localSetup(false, true);
   connect($('#connectButton')[0]);
 }
@@ -77,6 +82,18 @@ function soundEnabled(enabled) {
   return getCookie('soundEnabled') != 'false';
 }
 
+var _chatEnabled = undefined;
+function chatEnabled(enabled) {
+  if (!(enabled === undefined)) {
+    _chatEnabled = enabled;
+    setCookie('chatEnabled', enabled ? 'true' : 'false', 180);
+  }
+  if (_chatEnabled === undefined) {
+    _chatEnabled = getCookie('chatEnabled') == 'true';
+  }
+  return _chatEnabled;
+}
+
 function connect(button) {
   var label = $(button).val();
   if (label == 'Connect') {
@@ -84,6 +101,7 @@ function connect(button) {
     maze.threeDCanvas(null);
     try {
       client.chatPromptFun = chatPrompt;
+      client.chatListener = chatListener;
       client.scoreUpdateFun = scoreUpdate;
       client.audioSpecs = audioSpecs;
       client.soundEnabled(soundEnabled());
@@ -130,9 +148,44 @@ function changeName() {
   canvas3d.focus();
 }
 
+function chatMaybePrompt() {
+  var input = $('#chatInput');
+  if (chatEnabled() && input.val()) {
+    sendInput();
+    input[0].focus();
+  } else {
+    chatPrompt();
+  }
+}
+
 function chatPrompt() {
   var msg = prompt('Say something:');
   client.chat(msg);
+}
+
+function chatKey(event) {
+  if (event.which == '\r'.charCodeAt(0)) {
+    event.preventDefault();
+    sendInput();
+  }
+}
+
+function htmlQuote(str) {
+  return $('<div/>').text(str).html();
+}
+
+function sendInput() {
+  var input = $('#chatInput');
+  var msg = htmlQuote(input.val());
+  input.val('');
+  client.chat(msg);
+}
+
+function chatListener(name, msg) {
+  var time = new Date();
+  time = time.toLocaleTimeString();
+  name = htmlQuote(name);
+  scroller.addline([time, '<b>'+name+':</b> '+msg]);
 }
 
 function toggleWar() {
@@ -167,6 +220,21 @@ function toggleMute() {
     client.soundEnabled(true);
   }
   if (canvas3d) canvas3d.focus();
+}
+
+function toggleChat(enabled) {
+  if (enabled === undefined) enabled = !chatEnabled();
+  chatEnabled(enabled);
+  chatdiv = $('#chatdiv');
+  if (enabled) {
+    chatdiv.show();
+    $('#showchat').text('Hide chat');
+    $('#chatInput')[0].focus();
+  }
+  else {
+    chatdiv.hide();
+    $('#showchat').text('Show chat');
+  }
 }
 
 function shoot() {
@@ -268,6 +336,22 @@ function localSetup(keepmaze, nodraw) {
       </tr>
       <tr>
         <td>
+          <div id='chatdiv'
+               style='margin-left: auto; margin-right: auto; width: 600px'>
+            <div id='chat' style='width: 600px; height: 10em; overflow:auto; overflow-x: hidden; position:relative; border: 1px solid;'>
+            </div>
+            <input id='chatInput' type='text'
+                   style='width: 600px; margin-left: auto; margin-right: auto;'
+                   onKeyDown='chatKey(event)'/><br/>
+          </div>
+          <div style='text-align: center;'>
+            <a id='showchat' href='javascript:void(0)'
+               onClick='toggleChat()'>Hide chat</a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <center>
             <table>
               <tr>
@@ -279,7 +363,7 @@ function localSetup(keepmaze, nodraw) {
                     <br/><br/>
                   </span>
                   <button id='chat1' type='submit' class='chatbutton'
-                          onClick='chatPrompt()'>
+                          onClick='chatMaybePrompt()'>
                     Chat
                   </button>
                   <br/><br/>
@@ -313,7 +397,7 @@ function localSetup(keepmaze, nodraw) {
                     <br/><br/>
                   </span>
                   <button id='chat2' type='submit' class='chatbutton'
-                          onClick='chatPrompt()'>
+                          onClick='chatMaybePrompt()'>
                     Chat
                   </button>
                   <br/><br/>
