@@ -1,7 +1,6 @@
 Warn if no JavaScript
 
 Bullets
-  Warring mode players can hear chat from all other warring mode players
   Gambling
 
 Sound
@@ -15,14 +14,13 @@ Sound
   Death - Add Wilhelm scream
 
 Scrollback for chat
-  timestamps
   Web links
 
 Registration
+  MongoDB with Mongoose
   Consider Riak instead of Redis
     https://github.com/ha/doozerd
     https://github.com/dannycoates/doozerjs
-  Consider other databases
   Track bandwidth and storage
   PayPal and Bitcoin interface
     https://en.bitcoin.it/wiki/Bitcoind

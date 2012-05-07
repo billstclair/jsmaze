@@ -291,7 +291,7 @@ function MazeServer() {
     var hearers = {};
     var ifWarring = false;
     var addEmitter = function(otherPlayer) {
-      if (!ifWarring || otherPlayer.warring) {
+      if (otherPlayer.emitter && (!ifWarring || otherPlayer.warring)) {
         hearers[otherPlayer.uid] = otherPlayer.emitter;
       }
     };
