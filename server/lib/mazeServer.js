@@ -288,13 +288,21 @@ function MazeServer() {
     if (!msg) return;
     var name = player.name;
     args = {name:name, msg:msg};
-    forEachCouldSee(player,
-                    function(otherPlayer) {
-                      if (otherPlayer.emitter) {
-                        otherPlayer.emitter('chat', args);
-                      }
-                    },
-                    true);
+    var hearers = {};
+    var ifWarring = false;
+    var addEmitter = function(otherPlayer) {
+      if (!ifWarring || otherPlayer.warring) {
+        hearers[otherPlayer.uid] = otherPlayer.emitter;
+      }
+    };
+    forEachCouldSee(player, addEmitter, true);
+    if (player.warring) {
+      ifWarring = true;
+      forEachKnower(player, addEmitter);
+    }
+    for (uid in hearers) {
+      hearers[uid]('chat', args);
+    }
   }
 
   var botTable = {};
