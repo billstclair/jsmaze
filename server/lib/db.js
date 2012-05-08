@@ -8,40 +8,36 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-var redis = require('redis');
+var mongoose = require('mongoose');
 var fs = require('fs');
 var crypto = require('crypto');
 
 module.exports = new DB();
 function DB() {
   var self = this;
-  var _client;
+
+  // Models
+  var Account = null;
 
   init();
 
   function init() {
-    _client = redis.createClient();
-    _client.on('error', handleRedisError);
-  }
+    self.mongoose = mongoose;
+    mongoose.connect('mongodb://localhost/jsmaze');
+    
+    var Schema = mongoose.Schema;
 
-  function handleRedisError(err) {
-    console.log('Redis error: ' + err);
-  }
-
-  self.redisClient = function() {
-    return _client;
+    Account = new Schema({
+      userid: {type: String, index: true},
+      pwhash: {type: String},
+      email: {type: String}
+    });
+    Account = mongoose.model('Account', Account);
   }
 
   self.print = function(error, result) {
     console.log(error ? error : result);
   }
-
-  function cb(user, local) {
-    return function(error, res) {
-      if (error) user(error);
-      else local(res, user);
-    }
-  }        
 
   self.sha256 = sha256;
   function sha256(string) {
@@ -50,69 +46,32 @@ function DB() {
     return hash.digest('hex');
   }
 
-  function requireCallback(callback) {
-    if (!(typeof(callback) === 'function')) {
-      throw('Callback must be a function');
-    }
-  }
-
-  function key(type, name) {
-    return 'jmaze:' + type + (name ? ':' + name : '');
-  }
-
-  function userkey(login) {
-    return key('user', login);
-  }
-
-  function userskey() {
-    return key('users');
-  }
-
-  // Keys in the userkey hash table
-  var $passwordHash = 'passwordHash';
-
-  self.createAccount = function(login, password, callback) {
-    requireCallback(callback);
-    var usersk = userskey();
-    var userk = userkey(login);
-    _client.sismember(usersk, login, cb(callback, function(res) {
+  self.createAccount = function(login, password, email, callback) {
+    Account.findOne({login: login}, function(err, res) {
       if (res) callback('An account already exists for: ' + login);
       else {
-        var hash = sha256(password);
-        _client.multi()
-          .sadd(usersk, login)
-          .hset(userk, $passwordHash, hash)
-          .exec(function(err) {
-            callback(err, err ? null : true);
-          });
+        var pwhash = sha256(password);
+        acct = new Account({login: login, pwhash: pwhash, email: email});
+        acct.save(callback);
       }
-    }));
+    });
   }
 
   self.users = function(callback) {
-    requireCallback(callback);
-    _client.smembers(userskey(),callback);
+    Account.find({}, callback);
   }
 
   self.deleteAccount = function(login, callback) {
-    requireCallback(callback);
-    _client.multi()
-      .del(userkey(login))
-      .srem(userskey(), login)
-      .exec(function (err) {
-        callback(err, err ? null : true);
-      });
+    Account.remove({login: login}, callback);
   }
 
   self.login = function(login, password, callback) {
-    requireCallback(callback);
-    _client.hget(userkey(login), $passwordHash, function(error, res) {
-      // Won't need hash if no db entry, but don't allow
-      // telling that from timing.
-      var hash = sha256(password);
-      if (!(hash===res)) error = true;
-      var errmsg = 'Incorrect login or password';
-      callback(error ? errmsg : null, error ? null : true)
+    var badmsg = 'Unknown login or wrong password';
+    Account.findOne({login: login}, function(err, res) {
+      if (err || res==null) return callback(err || badmsg);
+      var pwhash = sha256(password);
+      if (res.pwhash != pwhash) return callback(badmsg);
+      callback(null, res);
     });
   }
 }
