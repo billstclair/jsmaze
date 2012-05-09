@@ -11,7 +11,6 @@
 var express = require('express');
 var app = express.createServer();
 var io = require('socket.io').listen(app);
-var fs = require('fs');
 var evaluator = require('../shared/evalFactory').makeEvaluator();
 var mazeServer = require('./mazeServer');
 var url = require('url');

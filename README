@@ -1,5 +1,5 @@
 A simple maze game written in JavaScript.
-Uses node.js, socket.io, express, and redis for the server side.
+Uses node.js, socket.io, express, and mongoose/MongoDB for the server side.
 
 There's a live server under active development (hence likely to be
 flaky) at:
@@ -9,7 +9,7 @@ flaky) at:
 The Git archive does NOT include required modules. To get them:
 
   cd /path/to/jsmaze   # or a parent directory. I use $HOME
-  npm install socket.io express redis optimist
+  npm install socket.io express mongoose optimist
 
 To run the server:
 
