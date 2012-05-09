@@ -41,6 +41,7 @@ function DB() {
     
     var Schema = mongoose.Schema;
     var noId = {noId: true};
+    var number0 = {type: Number, default: 0};
 
     Account = new Schema({
       userid: {type: String, unique: true},
@@ -57,11 +58,13 @@ function DB() {
       maze: String,             // name of last maze
       _pos: String,             // {i:<i>,j:<j>}
       _dir: String,             // {i:<i>,j:<j>}
-      size: Number
+      size: number0
     }, noId);
     addJSONVirtual(Player, 'appearance', '_appearance');
     addJSONVirtual(Player, 'pos', '_pos');
     addJSONVirtual(Player, 'dir', '_dir');
+    Player.pre('save', preSavePlayer);
+    Player.pre('remove', preRemovePlayer);
     Player = mongoose.model('Player', Player);
 
     Maze = new Schema({
@@ -69,30 +72,38 @@ function DB() {
       userid: {type: String, index: true}, // user who owns this maze
       _map: String,                        // arg to new jsmaze.Maze()
       _walls: String,                      // {'i,j':<idx>, ...}
-      size: Number
+      size: number0
     }, noId);
     addJSONVirtual(Maze, 'map', '_map');
     addJSONVirtual(Maze, 'walls', '_walls');
+    Maze.pre('save', preSaveMaze);
+    Maze.pre('remove', preRemoveMaze);
     Maze = mongoose.model('Maze', Maze);
 
     Image = new Schema({
       idx: {type: Number, unique: true},
       userid: {type: String, index: true},
       url: String,
-      size: Number
+      urlSize: number0,
+      size: number0
     }, noId);
+    Image.pre('save', preSaveImage);
+    Image.pre('remove', preRemoveImage);
     Image = mongoose.model('Image', Image);
 
     Stats = new Schema({
       userid: {type: String, unique: true},
-      totalSize: Number,
-      playerCount: Number,
-      playerSize: Number,
-      mazeCount: Number,
-      mazeSize: Number,
-      imageCount: Number,
-      ImageSize: Number
+      playerCount: number0,
+      playerSize: number0,
+      mazeCount: number0,
+      mazeSize: number0,
+      imageCount: number0,
+      imageSize: number0
     });
+    Stats.virtual('totalSize').
+      get(function() {
+        return this.playerSize + this.mazeSize + this.imageSize;
+      });
     Stats = mongoose.model('Stats', Stats);    
   }
 
@@ -208,4 +219,91 @@ function DB() {
     Player.remove({name: name}, _return);
   }
 
+  //
+  // Stats functions
+  //
+
+  self.getStats = function(userid, _return) {
+    _return = ensureCallback(_return);
+    self.findAccount(userid, cb(_return, function(user) {
+      if (!user) _return('No user with userid: ' + userid);
+      else {
+        Stats.findOne({userid: userid}, cb(_return, function(res) {
+          if (res) _return(null, res);
+          else {
+            var stats = new Stats({userid: userid});
+            stats.save(_return);
+          }
+        }));
+      }
+    }));
+  }
+
+  //
+  // Middleware to track sizes
+  //
+
+  function addem(o) {
+    var sum = 0;
+    for (var i=1; i<arguments.length; i++) {
+      var prop = arguments[i];
+      if (o[prop]) sum += o[prop].length;
+    }
+    return sum;
+  }
+
+  function playerSize(player) {
+    return addem(player, 'name', 'userid', '_appearance', 'maze', '_pos', '_dir');
+  }
+
+  function mazeSize(maze) {
+    return addem('name', 'userid', '_map', '_walls');
+  }
+
+  function imageSize(image) {
+    return addem(image, 'userid', 'url') + image.urlSize;
+  }
+
+  function preSave(o, next, sizefun, count, size) {
+    var oldsize = o.size;
+    var newsize = sizefun(o);
+    self.getStats(o.userid, cb(next, function(stats) {
+      if (oldsize==0) stats[count]++;
+      stats[size] += (newsize - oldsize);
+      o.size = newsize;
+      stats.save(next);
+    }));
+  }
+
+  function preRemove(o, next, count, size) {
+    self.getStats(o.userid, cb(next, function(stats) {
+      stats[count]--;
+      stats[size] -= o.size;
+      stats.save(next);
+    }));
+  }
+
+  function preSavePlayer(next) {
+    preSave(this, next, playerSize, 'playerCount', 'playerSize');
+  }
+
+  function preRemovePlayer(next) {
+    preRemove(this, next, 'playerCount', 'playerSize');
+  }
+
+  function preSaveMaze(next) {
+    preSave(this, next, mazeSize, 'mazeCount', 'mazeSize');
+  }
+
+  function preRemoveMaze(next) {
+    preRemove(this, next, 'mazeCount', 'mazeSize');
+  }
+
+  function preSaveImage(next) {
+    preSave(this, next, imageSize, 'imageCount', 'imageSize');
+  }
+
+  function preRemoveImage(next) {
+    preRemove(this, next, 'imageCount', 'imageSize');
+  }
 }
