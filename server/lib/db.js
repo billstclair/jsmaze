@@ -21,6 +21,7 @@ function DB() {
   var Player;
   var Maze;
   var Image;
+  var Counters;
 
   init();
 
@@ -105,6 +106,42 @@ function DB() {
         return this.playerSize + this.mazeSize + this.imageSize;
       });
     Stats = mongoose.model('Stats', Stats);    
+
+    Counters = new Schema({
+      imageIdx: number0
+    });
+    // http://stackoverflow.com/questions/7334390/has-mongoose-support-findandmodify-mongodb-method
+    Counters.statics.findAndModify = function(query, sort, doc, options, cb) {
+      return this.collection.findAndModify(query, sort, doc, options, cb);
+    }
+    Counters = mongoose.model('Counters', Counters);
+    initCounters();
+  }
+
+  function initCounters() {
+    Counters.findOne({}, function(err, res) {
+      if (!res) {
+        var counters = new Counters();
+        counters.save(function(err, res) {
+          if (err) console.log('Error making Counters instance: ' + err);
+          else console.log('Created counters instance.')
+        });
+      }
+    });
+  }
+
+  function incrementCounter(counter, _return) {
+    var inc = {};
+    inc[counter] = 1;
+    Counters.findAndModify(
+      {}, [], {$inc: inc}, {new:true}, cb(_return, function(res) {
+        _return(null, res[counter]);
+      }));
+  }
+
+  self.incrementImageIdx = incrementImageIdx;
+  function incrementImageIdx(_return) {
+    incrementCounter('imageIdx', _return);
   }
 
   self.print = function(error, result) {
@@ -151,13 +188,31 @@ function DB() {
     });
   }
 
+  function countModel(model, _return) {
+    _return = ensureCallback(_return);
+    model.count(_return);
+  }
+
   self.eachAccount = function(each) {
     eachModel(Account, each);
   }
 
-  self.deleteAccount = function(login, _return) {
+  self.countAccounts = function(_return) {
+    countModel(Account, _return)
+  }
+
+  // Don't be tempted to just call model.remove.
+  // That doesn't run the remove middleware
+  // https://github.com/LearnBoost/mongoose/issues/439
+  function removeDoc(model, query, _return) {
     _return = ensureCallback(_return);
-    Account.remove({login: login}, _return);
+    model.findOne(query, cb(_return, function(doc) {
+      doc.remove(_return);
+    }));
+  }
+
+  self.removeAccount = function(login, _return) {
+    removeDoc(Account, {login: login}, _return);
   }
 
   self.findAccount = function(login, _return) {
@@ -214,9 +269,96 @@ function DB() {
     eachModel(Player, each);
   }
 
-  self.deletePlayer = function(name, _return) {
+  self.countPlayers = function(_return) {
+    countModel(Player, _return)
+  }
+
+  self.removePlayer = function(name, _return) {
+    removeDoc(Player, {name: name}, _return);
+  }
+
+  //
+  // Maze functions
+  //
+
+  self.makeMaze = function(name, userid, map, _return) {
     _return = ensureCallback(_return);
-    Player.remove({name: name}, _return);
+    self.findAccount(userid, cb(_return, function(user) {
+      if (!user) _return('No user with userid: ' + userid);
+      else {
+        var maze = new Maze({name: name, userid: userid});
+        if (map) maze.map = map;
+        maze.save(function(err, res) {
+          if (err) _return('Maze already exists with name: ' + name);
+          else _return(null, res);
+        });
+      }
+    }));
+  }
+
+  self.findMaze = function(name, _return) {
+    _return = ensureCallback(_return);
+    Maze.findOne({name: name}, _return);
+  }
+
+  self.findUserMazes = function(userid, _return) {
+    _return = ensureCallback(_return);
+    Maze.find({userid: userid}, _return);
+  }
+
+  self.eachMaze = function(each) {
+    eachModel(Maze, each);
+  }
+
+  self.countMazes = function(_return) {
+    countModel(Maze, _return)
+  }
+
+  self.removeMaze = function(name, _return) {
+    removeDoc(Maze, {name: name}, _return);
+  }
+
+  //
+  // Image functions
+  //
+
+  self.makeImage = function(userid, url, urlSize, _return) {
+    _return = ensureCallback(_return);
+    self.findAccount(userid, cb(_return, function(user) {
+      if (!user) _return('No user with userid: ' + userid);
+      else {
+        incrementImageIdx(cb(_return, function(idx) {
+          var image = new Image({idx: idx, userid: userid, url: url,
+                                 urlSize: urlSize});
+          image.save(function(err, res) {
+            if (err) _return('Image already exists with idx: ' + idx);
+            else _return(null, res);
+          });
+        }));
+      }
+    }));
+  }
+
+  self.findImage = function(idx, _return) {
+    _return = ensureCallback(_return);
+    Image.findOne({idx: idx}, _return);
+  }
+
+  self.findUserImages = function(userid, _return) {
+    _return = ensureCallback(_return);
+    Image.find({userid: userid}, _return);
+  }
+
+  self.eachImage = function(each) {
+    eachModel(Image, each);
+  }
+
+  self.countImages = function(_return) {
+    countModel(Image, _return)
+  }
+
+  self.removeImage = function(idx, _return) {
+    removeDoc(Image, {idx: idx}, _return);
   }
 
   //
@@ -225,11 +367,11 @@ function DB() {
 
   self.getStats = function(userid, _return) {
     _return = ensureCallback(_return);
-    self.findAccount(userid, cb(_return, function(user) {
-      if (!user) _return('No user with userid: ' + userid);
+    Stats.findOne({userid: userid}, cb(_return, function(res) {
+      if (res) _return(null, res);
       else {
-        Stats.findOne({userid: userid}, cb(_return, function(res) {
-          if (res) _return(null, res);
+        self.findAccount(userid, cb(_return, function(user) {
+          if (!user) _return('No user with userid: ' + userid);
           else {
             var stats = new Stats({userid: userid});
             stats.save(_return);
@@ -239,48 +381,53 @@ function DB() {
     }));
   }
 
+  self.getTotalSize = function(userid, _return) {
+    _return = ensureCallback(_return);
+    self.getStats(userid, cb(_return, function(stats) {
+      _return(null, stats.totalSize);
+    }));
+  }
+
   //
   // Middleware to track sizes
   //
 
-  function addem(o) {
+  function osize(o) {
     var sum = 0;
-    for (var i=1; i<arguments.length; i++) {
-      var prop = arguments[i];
-      if (o[prop]) sum += o[prop].length;
+    for (var i in o.schema.paths) {
+      var val = o[i];
+      sum += i.length + 4 + ((typeof(val) == 'string') ? val.length+2 : 4);
     }
     return sum;
   }
 
   function playerSize(player) {
-    return addem(player, 'name', 'userid', '_appearance', 'maze', '_pos', '_dir');
+    return osize(player);
   }
 
   function mazeSize(maze) {
-    return addem('name', 'userid', '_map', '_walls');
+    return osize(maze);
   }
 
   function imageSize(image) {
-    return addem(image, 'userid', 'url') + image.urlSize;
+    return osize(image) + image.urlSize;
   }
 
   function preSave(o, next, sizefun, count, size) {
     var oldsize = o.size;
     var newsize = sizefun(o);
-    self.getStats(o.userid, cb(next, function(stats) {
-      if (oldsize==0) stats[count]++;
-      stats[size] += (newsize - oldsize);
-      o.size = newsize;
-      stats.save(next);
-    }));
+    o.size = newsize;
+    var inc = {}
+    if (oldsize==0) inc[count] = 1;
+    inc[size] = (newsize - oldsize);
+    Stats.update({userid: o.userid}, {$inc: inc}, null, next);
   }
 
   function preRemove(o, next, count, size) {
-    self.getStats(o.userid, cb(next, function(stats) {
-      stats[count]--;
-      stats[size] -= o.size;
-      stats.save(next);
-    }));
+    var inc = {};
+    inc[count] = -1;
+    inc[size] = -o.size;
+    Stats.update({userid: o.userid}, {$inc: inc}, null, next);
   }
 
   function preSavePlayer(next) {
