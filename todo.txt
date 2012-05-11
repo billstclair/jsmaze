@@ -1,26 +1,4 @@
-Warn if no JavaScript
-
-Bullets
-  Gambling
-
-Sound
-  Should hear bullet firing even if not looking at it.
-    Same as hearing other players move.
-  sound volume stored in cookie
-  Move, turn for other players, volume reduced by distance
-    Silent if done slowly
-  Chat
-  Mention nick in chat
-  Death - Add Wilhelm scream
-
-Scrollback for chat
-  Web links
-
 Registration
-  MongoDB with Mongoose
-  Consider Riak instead of Redis
-    https://github.com/ha/doozerd
-    https://github.com/dannycoates/doozerjs
   Track bandwidth and storage
   PayPal and Bitcoin interface
     https://en.bitcoin.it/wiki/Bitcoind
@@ -51,3 +29,20 @@ Objects
   Nested word-binding environment.
   Libraries provided by users.
   Primitives provided by jsMaze
+
+Bullets
+  Gambling
+
+Sound
+  Should hear bullet firing even if not looking at it.
+    Same as hearing other players move.
+  sound volume stored in cookie
+  Move, turn for other players, volume reduced by distance
+    Silent if done slowly
+  Chat
+  Mention nick in chat
+  Death - Add Wilhelm scream
+
+Scrollback for chat
+  Web links
+
