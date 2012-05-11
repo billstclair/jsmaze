@@ -1,6 +1,6 @@
 <html>
 <head>
-  <link rel='stylesheet' type='text/css' href='css/tables.css'>
+  <link rel='stylesheet' type='text/css' href='css/style.css'>
   <script src='js/jquery.min.js'></script>
   <script src='socket.io/socket.io.js'></script>
   <script src='server/shared/jsmaze.js'></script>
@@ -10,6 +10,7 @@
   <script src='js/jsAudio.js'></script>
   <script src='js/audioSpecs.js'></script>
   <script src='js/jsScroller.js'></script>
+  <script src='js/csspopup.js'></script>
   <script>
 
 function setSpines(checkbox) {
@@ -347,7 +348,7 @@ function localSetup(keepmaze, nodraw) {
                    onKeyDown='chatKey(event)'/><br/>
           </div>
           <div style='text-align: center;'>
-            <a id='showchat' href='javascript:void(0)'
+            <a id='showchat' href='#'
                onClick='toggleChat()'>Hide chat</a>
           </div>
         </td>

@@ -38,3 +38,20 @@ td.number {
 #noscript-padding {
     padding-top:3.5em;
 }
+#blanket {
+    background-color:#ddd;
+    opacity: 0.65;
+    filter:alpha(opacity=65);
+    position:absolute;
+    z-index: 9001;
+    top:0px;
+    left:0px;
+    width:100%;
+}
+.popUpDiv {
+    position: absolute;
+    border: solid 1px;
+    padding: 5px;
+    background-color:white;
+    z-index: 9002;
+}
