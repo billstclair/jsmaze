@@ -39,7 +39,7 @@ var csspopup = {};
     }
     if ((viewportHeight > document.body.parentNode.scrollHeight) &&
         (viewportHeight > document.body.parentNode.clientHeight)) {
-      blanketHeight = viewportheight;
+      blanketHeight = viewportHeight;
     } else {
       if (document.body.parentNode.clientHeight >
           document.body.parentNode.scrollHeight) {
