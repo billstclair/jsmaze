@@ -21,6 +21,9 @@ table.innertable th, table.innertable td {
 td.number {
   text-align: right;
 }
+table.formtable th {
+  text-align: right;
+}
 #noscript-warning {
     font-family:sans-serif;
     position:fixed;

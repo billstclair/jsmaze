@@ -8,8 +8,13 @@
 <body>
   <p>[from <a href="http://www.pat-burt.com/web-development/how-to-do-a-css-popup-without-opening-a-new-window/">here</a>]</p>
   <div id="blanket" style="display:none;"></div>
-  <div id="popUpDiv" class="popUpDiv" style="display:none;">
-    <a href="#" onclick="csspopup.popup('popUpDiv')">Click Here To Close</a>
+  <div id="popUpDiv" class="popUpDiv" style="display:none; text-align: center;">
+    <p>
+      <a href="#" onclick="csspopup.popup('popUpDiv')">Click Here To Close</a>
+    </p>
+    <p>
+      <img src="jsmaze-250x249.png" alt="jsMaze logo" width="250" height="249"/>
+    </p>
   </div>
   <a href="#" onclick="csspopup.popup('popUpDiv')">Click Here To Open The Pop Up</a>
 </body>

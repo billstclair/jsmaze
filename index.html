@@ -171,6 +171,13 @@ function chatKey(event) {
   }
 }
 
+function loginKey(event) {
+  if (event.which == '\r'.charCodeAt(0)) {
+    event.preventDefault();
+    doLogin();
+  }
+}
+
 function htmlQuote(str) {
   return $('<div/>').text(str).html();
 }
@@ -237,6 +244,41 @@ function toggleChat(enabled) {
     $('#showchat').text('Show chat');
     if (canvas3d) canvas3d.focus();
   }
+}
+
+var userid = null;
+function login() {
+  if (userid) {
+    userid = null;
+    $('#login').text('Login');
+    client.logout();
+  } else {
+    csspopup.popup('logindiv');
+    $('#userid').focus();
+  }
+}
+
+function doLogin(cancel) {
+  csspopup.popup('logindiv');
+  if (!cancel) {
+    var newuserid = $('#userid').val();
+    var password = $('#password').val();
+    try {
+      client.login(newuserid, password);
+      userid = newuserid;
+      $('#login').text('Logout');
+    } catch (err) {
+      showError(err);
+    }
+  }
+  canvas3d.focus();
+}
+
+function showError(err) {
+  var errdiv = $('#errdiv');
+  errdiv.text(err);
+  errdiv.show();
+  window.setTimeout("$('#errdiv').hide()", 2000);
 }
 
 function shoot() {
@@ -334,6 +376,7 @@ function localSetup(keepmaze, nodraw) {
         <td>
           <center>
             <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
+            <div><p id='errdiv' style='display:none; color: red;'></p></div>
           </center>
         </td>
       </tr>
@@ -350,6 +393,9 @@ function localSetup(keepmaze, nodraw) {
           <div style='text-align: center;'>
             <a id='showchat' href='#'
                onClick='toggleChat()'>Hide chat</a>
+            &nbsp;
+            <a id='login' href='#'
+               onClick='login()'>Login</a>
           </div>
         </td>
       </tr>
@@ -447,6 +493,29 @@ function localSetup(keepmaze, nodraw) {
     </table>
     <p>
   </center>
+  <!-- Pop-up divs -->
+  <div id="blanket" style="display:none;"></div>
+  <div id='logindiv' class='popUpDiv' style='display:none;'>
+    <table class='formtable'>
+      <tr>
+        <th>User ID:</th>
+        <td><input type='text' id='userid' size='20'/
+                   onKeyDown='loginKey(event)'/></td>
+      </tr>
+      <tr>
+        <th>Password:</th>
+        <td><input type='password' id='password' size='30'/
+                   onKeyDown='loginKey(event)'/></td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>
+          <input type='submit' onClick='doLogin()' value='Login'/>
+          <input type='submit' onClick='doLogin(true)' value='Cancel'/>
+        </td>
+      </tr>
+    </table>
+  </div>
   <noscript>
     <div id="noscript-warning">This game requires JavaScript.</div>
   </noscript>
