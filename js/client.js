@@ -43,7 +43,9 @@ function Client() {
                        'removePlayer', removePlayer,
                        'moveto', moveto,
                        'turn', turn,
-                       'chat', receiveChat);
+                       'chat', receiveChat,
+                       'loginError', loginError,
+                       'registerError', registerError);
   }
 
   function log(x) {
@@ -54,6 +56,8 @@ function Client() {
   self.chatPromptFun = null;
   self.scoreUpdateFun = null;
   self.audioSpecs = null;
+  self.loginErrorFun = null;
+  self.registerErrorFun = null;
 
   self.connect = connect;
   function connect(serverURL, newCanvas3d, newCanvas, resource, name) {
@@ -227,4 +231,36 @@ function Client() {
     maze.receiveChat(name, msg);
     if (self.chatListener) self.chatListener(name, msg);
   }
+
+  self.login = function(userid, password) {
+    if (!userid || !password) throw('Neither User ID nor Password may be blank'); 
+    emitEval('login', {userid: userid, password: password});
+  }
+
+  function loginError(socket, args) {
+    if (self.loginErrorFun) {
+      self.loginErrorFun(args.msg);
+    }
+  }
+
+  self.logout = function() {
+    emitEval('logout', {});
+  }
+
+  self.register = function(userid, password, password2, email) {
+    if (!userid || !password || !email) {
+      throw('None of User ID, Password, and email may be blank');
+    }
+    if (password != password2) {
+      throw("Password doesn't match Repeat Password");
+    }
+    emitEval('register', {userid: userid, password: password, email: email});
+  }
+
+  function registerError(socket, args) {
+    if (self.registerErrorFun) {
+      self.registerErrorFun(args.msg);
+    }
+  }
+
 }

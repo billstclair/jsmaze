@@ -71,7 +71,11 @@ io.sockets.on('connection', function (socket) {
   var emitter = getSocketEmitter(socket)
   var socketid = socket.id;
   socket.on('eval', function (data) {
-    evaluator.evaluate(socketid, emitter, data, console.log);
+    try {
+      evaluator.evaluate(socketid, emitter, data, console.log);
+    } catch(err) {
+      console.log(err);
+    }
   });
   socket.on('disconnect', function() {
     mazeServer.removePlayer(socketid);

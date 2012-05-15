@@ -175,6 +175,9 @@ function loginKey(event) {
   if (event.which == '\r'.charCodeAt(0)) {
     event.preventDefault();
     doLogin();
+  } else if (event.which == 27) { // escape
+    event.preventDefault();
+    doLogin(true);
   }
 }
 
@@ -252,22 +255,51 @@ function login() {
     userid = null;
     $('#login').text('Login');
     client.logout();
+    canvas3d.focus();
   } else {
     csspopup.popup('logindiv');
     $('#userid').focus();
   }
 }
 
+function toggleRegister(turnon) {
+  var loginLink = $('#loginLink');
+  var loginButton = $('#loginButton');
+  var registerRows = $('.registerRows');
+  if (turnon === undefined) {
+    turnon = (loginLink.text() == 'register');
+  }
+  if (turnon) {
+    loginLink.text('login');
+    loginButton.val('Register');
+    registerRows.show();
+  } else {
+    loginLink.text('register');
+    loginButton.val('Login');
+    registerRows.hide();
+  }
+  $('#userid').focus();
+}
+
 function doLogin(cancel) {
   csspopup.popup('logindiv');
+  var register = ($('#loginLink').text() == 'login');
   if (!cancel) {
     var newuserid = $('#userid').val();
     var password = $('#password').val();
+    var password2 = $('#password2').val();
+    var email = $('#email').val();
     try {
-      client.login(newuserid, password);
+      if (register) client.register(newuserid, password, password2, email);
+      else client.login(newuserid, password);
       userid = newuserid;
       $('#login').text('Logout');
+      if (register) toggleRegister(false);
     } catch (err) {
+      hidePopupFun = function() {
+        csspopup.popup('logindiv');
+        $('#userid').focus();
+      };
       showError(err);
     }
   }
@@ -275,10 +307,22 @@ function doLogin(cancel) {
 }
 
 function showError(err) {
-  var errdiv = $('#errdiv');
-  errdiv.text(err);
-  errdiv.show();
-  window.setTimeout("$('#errdiv').hide()", 2000);
+  var errmsg = $('#errmsg');
+  errmsg.text(err);
+  csspopup.popup('errdiv');
+  $('#errdivButton').focus();
+}
+
+var hidePopupFun = null;
+
+function hidePopup(div) {
+  csspopup.popup(div);
+  canvas3d.focus();
+  if (hidePopupFun) {
+    var fun = hidePopupFun;
+    hidePopupFun = null;
+    fun();
+  }
 }
 
 function shoot() {
@@ -376,7 +420,6 @@ function localSetup(keepmaze, nodraw) {
         <td>
           <center>
             <canvas id='draw' width='600' height='600' tabindex='1'></canvas><br>
-            <div><p id='errdiv' style='display:none; color: red;'></p></div>
           </center>
         </td>
       </tr>
@@ -507,15 +550,31 @@ function localSetup(keepmaze, nodraw) {
         <td><input type='password' id='password' size='30'/
                    onKeyDown='loginKey(event)'/></td>
       </tr>
+      <tr class='registerRows' style='display:none'>
+        <th>Repeat Password:</th>
+        <td><input type='password' id='password2' size='30'/
+                   onKeyDown='loginKey(event)'/></td>
+      </tr>
+      <tr class='registerRows' style='display:none'>
+        <th>Email:</th>
+        <td><input type='email' id='email' size='30'/
+                   onKeyDown='loginKey(event)'/></td>
+      </tr>
       <tr>
         <th></th>
         <td>
-          <input type='submit' onClick='doLogin()' value='Login'/>
+          <input type='submit' id='loginButton' onClick='doLogin()' value='Login'/>
           <input type='submit' onClick='doLogin(true)' value='Cancel'/>
+          <a href='#' id='loginLink' onClick='toggleRegister()'>register</a>
         </td>
       </tr>
     </table>
   </div>
+  <div id='errdiv' class='popUpDiv' style='display:none;'>
+    <p id='errmsg' style='color: red;'></p>
+    <input type='submit' id='errdivButton' value='OK'
+           onClick="hidePopup('errdiv')"/>
+  </div>  
   <noscript>
     <div id="noscript-warning">This game requires JavaScript.</div>
   </noscript>
