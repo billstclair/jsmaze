@@ -265,18 +265,22 @@ function login() {
 function toggleRegister(turnon) {
   var loginLink = $('#loginLink');
   var loginButton = $('#loginButton');
-  var registerRows = $('.registerRows');
   if (turnon === undefined) {
     turnon = (loginLink.text() == 'register');
   }
-  if (turnon) {
+  $('.logindiv').hide();
+  if (turnon == 'forgot') {
+    loginButton.val('Forgot');
+    loginLink.text('login');
+    $('.forgot').show();
+  } else if (turnon) {
     loginLink.text('login');
     loginButton.val('Register');
-    registerRows.show();
+    $('.register').show();
   } else {
     loginLink.text('register');
     loginButton.val('Login');
-    registerRows.hide();
+    $('.login').show();
   }
   $('#userid').focus();
 }
@@ -540,22 +544,22 @@ function localSetup(keepmaze, nodraw) {
   <div id="blanket" style="display:none;"></div>
   <div id='logindiv' class='popUpDiv' style='display:none;'>
     <table class='formtable'>
-      <tr>
+      <tr class='logindiv login register forgot'>
         <th>User ID:</th>
         <td><input type='text' id='userid' size='20'/
                    onKeyDown='loginKey(event)'/></td>
       </tr>
-      <tr>
+      <tr class='logindiv login register'>
         <th>Password:</th>
         <td><input type='password' id='password' size='30'/
                    onKeyDown='loginKey(event)'/></td>
       </tr>
-      <tr class='registerRows' style='display:none'>
+      <tr class='logindiv register' style='display:none'>
         <th>Repeat Password:</th>
         <td><input type='password' id='password2' size='30'/
                    onKeyDown='loginKey(event)'/></td>
       </tr>
-      <tr class='registerRows' style='display:none'>
+      <tr class='logindiv register forgot' style='display:none'>
         <th>Email:</th>
         <td><input type='email' id='email' size='30'/
                    onKeyDown='loginKey(event)'/></td>
@@ -564,8 +568,13 @@ function localSetup(keepmaze, nodraw) {
         <th></th>
         <td>
           <input type='submit' id='loginButton' onClick='doLogin()' value='Login'/>
-          <input type='submit' onClick='doLogin(true)' value='Cancel'/>
+          <input type='submit' onClick='doLogin(true)' value='Cancel'/><br/>
           <a href='#' id='loginLink' onClick='toggleRegister()'>register</a>
+          <a href='#' class='logindiv login register'
+             onClick="toggleRegister('forgot')">forgot password</a>
+          <span class='logindiv forgot' style='display:none;'>
+            <br/>
+            Enter User ID or Email to reset your password.</span>
         </td>
       </tr>
     </table>

@@ -55,13 +55,15 @@ function DB() {
     Player = new Schema({
       name: {type: String, unique: true},
       userid: {type: String, index: true},
-      _appearance: String,      // {left:l, right:r, front:f, back:b}
-      maze: String,             // name of last maze
-      _pos: String,             // {i:<i>,j:<j>}
-      _dir: String,             // {i:<i>,j:<j>}
+      _images: String,      // {left:<url>, right:<url>, front:<url>, back:<url>}
+      _scales: String,      // {left:<num>, right:<num>, front:<num>, back:<num>}
+      maze: String,         // name of last maze
+      _pos: String,         // {i:<i>,j:<j>}
+      _dir: String,         // {i:<i>,j:<j>}
       size: number0
     }, noId);
-    addJSONVirtual(Player, 'appearance', '_appearance');
+    addJSONVirtual(Player, 'images', '_images');
+    addJSONVirtual(Player, 'scales', '_scales');
     addJSONVirtual(Player, 'pos', '_pos');
     addJSONVirtual(Player, 'dir', '_dir');
     Player.pre('save', preSavePlayer);

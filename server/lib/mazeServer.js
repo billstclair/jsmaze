@@ -10,6 +10,7 @@
 
 var jsmaze = require('../shared/jsmaze.js');
 var bots = require('./bots.js');
+var accounts = require('./accounts.js');
 
 module.exports = new MazeServer();
 
@@ -41,7 +42,10 @@ function MazeServer() {
                        'playerProps', playerProps,
                        'chat', chat,
                        'shoot', shoot,
-                       'warring', warring);
+                       'warring', warring,
+                       'login', login,
+                       'register', register,
+                       'logout', logout);
   }
 
   function getmaze(emitter, args, socketid) {
@@ -264,17 +268,23 @@ function MazeServer() {
   function playerProps(emitter, args, socketid, fun) {
     var player = getPlayerOrWarn(socketid, emitter);
     if (!player) return;
-    // Eventually we'll allow change of other props
+    // Eventually we may allow change of other props
     var name = args.name;
     if (name) {
       player.name = name;
-      var props = {uid:player.uid, name:name};
-      forEachKnower(player, function(otherPlayer) {
-        if (otherPlayer.emitter) {
-          otherPlayer.emitter('playerProps', {props:props});
-        }
-      });
+      updatePlayerProps(player, {uid:player.uid, name: name});
     }
+  }
+
+  function updatePlayerProps(player, props, selftoo) {
+    if (selftoo && player.emitter) {
+      player.emitter('playerProps', {isSelf: true, props: props});
+    }
+    forEachKnower(player, function(otherPlayer) {
+      if (otherPlayer.emitter) {
+        otherPlayer.emitter('playerProps', {props:props});
+      }
+    });
   }
 
   function forEachCouldSee(player, fun, heretoo) {
@@ -443,6 +453,42 @@ function MazeServer() {
     props = {uid: killer.uid, score: score};
     args.props = props;
     forEachKnower(killer, updater);
+  }
+
+  function register(emitter, args, socketid, fun) {
+    var res = accounts.register(args);
+    emitter('register', res);
+  }
+
+  function login(emitter, args, socketid, fun) {
+    var player = players.socketid;
+    var errmsg = null;
+
+    if (!player) errmsg = 'No player for socket';
+    else if (player.userid) errmsg = 'Already logged in';
+    if (errmsg) return emitter('login', {errmsg: errmsg});
+
+    var res = accounts.login(args);
+    if (res.errmsg) return emitter('login', res);
+
+    var dbplayer = res.dbplayer;
+    player.userid = dbplayer.userid;
+    var name = dbplayer.name;
+    var images = dbplayer.images;
+    var scales = dbplayer.scales;
+    var props = {name: name};
+    if (images) props.images = images;
+    if (scales) props.scales = scales;
+    updatePlayerProps(player, props, true);
+  }
+
+  function logout(emitter, args, socketid, fun) {
+    var player = players[socketid];
+    var errmsg = null;
+    if (!player) errmsg = 'No player for socket';
+    else if (!player.userid) errmsg = 'Not logged in';
+    if (errmsg) return emitter('popupmsg', errmsg);
+    accounts.logout(player.uid);
   }
 
 }
