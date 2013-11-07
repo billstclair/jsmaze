@@ -1168,7 +1168,7 @@ var jsClientMaze = {};
     function doKeyListener(event) {
       self.keyevent = event;
       var key = event.key;
-      if (key == undefined) key = event.keyCode;
+      if (typeof(key) != 'number') key = event.keyCode;
       var nodefault = true;
       // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
       if (key==87 || key==73 || key==38) moveForward(); // WI^
